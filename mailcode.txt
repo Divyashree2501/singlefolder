@@ -1,0 +1,1429 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Net.Mail;
+using System.Net;
+
+
+
+using System.Windows.Forms.DataVisualization.Charting;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Globalization;
+
+
+
+//using System.Windows.Forms.DataVisualization.Charting;
+namespace MIW_ChartMail
+{
+    class Program
+    {
+        public static string imagedata;
+
+
+
+        #region Connection
+        public static SqlConnection OnlineDBConnectionOpen()
+        {
+            DataTable Dt = new DataTable();
+            string SqlConn = ConfigurationManager.AppSettings["Supplierconn"];
+            SqlConnection OnlineSqlConn = new SqlConnection(SqlConn.ToString());
+            if (OnlineSqlConn.State != ConnectionState.Open)
+            {
+                OnlineSqlConn.Open();
+            }
+            return OnlineSqlConn;
+        }
+
+
+
+        public static void CloseOnlineDBConnection(SqlConnection _Sql)
+        {
+            if (_Sql.State == ConnectionState.Open)
+            {
+                _Sql.Close();
+                _Sql.Dispose();
+            }
+        }
+
+
+
+        #endregion
+
+
+
+
+        public static SqlConnection AttendDBConnectionOpen()
+        {
+            DataTable Dt = new DataTable();
+            string SqlConn = ("Data Source=TVSMHNT43;Initial catalog=ATTEND;user id=nt43;password=Mana8e;Pooling=false;Connect Timeout=120;");
+            SqlConnection OnlineSqlConn = new SqlConnection(SqlConn.ToString());
+            if (OnlineSqlConn.State != ConnectionState.Open)
+            {
+                OnlineSqlConn.Open();
+            }
+            return OnlineSqlConn;
+        }
+
+
+
+        public static void AttendDBConnectionClose(SqlConnection _Sql)
+        {
+            if (_Sql.State == ConnectionState.Open)
+            {
+                _Sql.Close();
+                _Sql.Dispose();
+            }
+        }
+
+
+
+
+        public static void Main(string[] args)
+        {
+
+
+
+
+            MonthlyReport();
+
+
+
+        }
+
+
+
+        public static void MonthlyReport()
+        {
+              string image;
+            //var now = DateTime.Now;
+            var now = Convert.ToDateTime("01-06-2023");
+
+
+
+           string month= now.ToString("MMM");
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var DaysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+            var lastDay = new DateTime(now.Year, now.Month, DaysInMonth);
+            DataTable cntdt = new DataTable();
+
+
+
+
+
+
+               string MailID = "", stremail = "", MailIDCC = "", stremailcc = "", Shopvalue = "", ShopOutput = "";
+                SqlConnection SQLCONN = new SqlConnection();
+                DataTable Dt = new DataTable();
+                DataTable TotalDt = new DataTable();
+                DataTable DT_User = new DataTable();
+                DataTable LevelManger = new DataTable();
+                SQLCONN = OnlineDBConnectionOpen();
+                string MailName = "MIW_PR_Get_MaterialMailHandlingMonthlyReport";
+                SqlCommand MailNameCmd = new SqlCommand(MailName, SQLCONN);
+                MailNameCmd.CommandType = CommandType.StoredProcedure;
+                SqlDataAdapter MailNameadpt = new SqlDataAdapter(MailNameCmd);
+                MailNameCmd.Parameters.AddWithValue("@iType", 1);
+                MailNameCmd.Parameters.AddWithValue("@iStartDate", startOfMonth);
+                MailNameCmd.Parameters.AddWithValue("@iEndDate", lastDay);
+
+
+
+                DataTable dt = new DataTable();
+                MailNameadpt.Fill(DT_User);
+
+
+
+            
+
+
+
+
+
+
+                for (int i = 0; i < DT_User.Rows.Count; i++)
+                {
+
+
+
+                    Dt = new DataTable();
+                    SQLCONN = OnlineDBConnectionOpen();
+                    string Shop = DT_User.Rows[i]["Shop"].ToString();
+                    string resultdata = DT_User.Rows[i]["ReportingManger"].ToString();
+
+
+
+
+                if (resultdata!=string.Empty)
+                {
+                    string[] ReportingManger = resultdata.Split('-');
+                    string ReportingMangerEmpno = ReportingManger[0];
+                    string GroupMailId = DT_User.Rows[i]["GroupMailid"].ToString();
+
+
+
+                    string pname = "MIW_PR_Get_MaterialMailHandlingChartReport";
+                    SqlCommand cmd = new SqlCommand(pname, SQLCONN);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    SqlDataAdapter adpt = new SqlDataAdapter(cmd);
+                    cmd.Parameters.AddWithValue("@iShop", Shop);
+                    cmd.Parameters.AddWithValue("@iReportingManger", resultdata);
+                    cmd.Parameters.AddWithValue("@iStartDate", startOfMonth);
+                    cmd.Parameters.AddWithValue("@iEndDate", lastDay);
+
+
+
+                    adpt.Fill(Dt);
+                    CloseOnlineDBConnection(SQLCONN);
+                    cmd.Dispose();
+
+
+
+                    string firstCharacters = Shop.Substring(0, 1);
+                    string lastCharacters = Shop.Substring(Shop.Length - 2);
+
+
+
+                    SqlConnection Shopdetail = new SqlConnection();
+                    Shopdetail = OnlineDBConnectionOpen();
+                    SqlCommand shopcommand = new SqlCommand("select  ShopDesc from MIW_ShopMaster where  shop = '" + lastCharacters + "' ", Shopdetail);
+                    shopcommand.CommandType = CommandType.Text;
+                    object objShop = shopcommand.ExecuteScalar();
+                    if (objShop != null)  //(!obj.Equals(DBNull.Value))
+                    {
+                        Shopvalue = shopcommand.ExecuteScalar().ToString();
+                        ShopOutput = Shopvalue;
+
+
+
+                    }
+                    CloseOnlineDBConnection(Shopdetail);
+
+
+
+
+                    DataTable mhDtdetail = new DataTable();
+                    DataTable mhDtdetailff = new DataTable();
+
+
+
+                    SqlConnection dd = new SqlConnection();
+                    dd = AttendDBConnectionOpen();
+                    SqlCommand reportcmd = new SqlCommand("select MgrNo_Level1 from EmpManager where EmpNo = '" + ReportingMangerEmpno + "'", dd);
+                    reportcmd.CommandType = CommandType.Text;
+                    SqlDataAdapter da = new SqlDataAdapter(reportcmd);
+                    da.Fill(mhDtdetail);
+
+
+
+                    string MgrNo_Level1 = mhDtdetail.Rows[0]["MgrNo_Level1"].ToString();
+
+
+
+
+                    SqlConnection ddg = new SqlConnection();
+                    ddg = AttendDBConnectionOpen();
+                    SqlCommand reportcmddetail = new SqlCommand("select  empname,empno from  empmaster where empno = '" + MgrNo_Level1 + "'", ddg);
+                    reportcmddetail.CommandType = CommandType.Text;
+                    SqlDataAdapter daag = new SqlDataAdapter(reportcmddetail);
+                    daag.Fill(mhDtdetailff);
+
+
+
+                    string value1 = mhDtdetailff.Rows[0]["empname"].ToString();
+                    string value2 = mhDtdetailff.Rows[0]["empno"].ToString();
+                    resultdata = value1;
+                    AttendDBConnectionClose(SQLCONN);
+                    reportcmd.Dispose();
+
+
+
+                    SqlConnection cc = new SqlConnection();
+                    cc = AttendDBConnectionOpen();
+                    SqlCommand cccommand = new SqlCommand("SELECT email_id FROM EMPMASTER WHERE empno='" + value2 + "' and dflag='A'", cc);
+                    cccommand.CommandType = CommandType.Text;
+                    object objcc = cccommand.ExecuteScalar();
+
+
+
+                    if (objcc != null)  //(!obj.Equals(DBNull.Value))
+                    {
+                        MailIDCC = cccommand.ExecuteScalar().ToString();
+                        stremailcc = MailIDCC;
+
+
+
+                    }
+
+
+
+
+                    AttendDBConnectionClose(cc);
+
+
+
+
+
+
+
+
+                    //populate dataset with some demo data
+                    DataSet dataSet = new DataSet();
+                    DataTable dt1 = new DataTable();
+                    dt1.Columns.Add("Text", typeof(string));
+                    dt1.Columns.Add("Value", typeof(int));
+                    dt1.Rows.Add("Total no of NC", Dt.Rows[0]["TotalNoofNC"].ToString());
+                    dt1.Rows.Add("No of NC Closed", Dt.Rows[0]["NoNcClosed"].ToString());
+                    dt1.Rows.Add("No of NC Pending", Dt.Rows[0]["NoofNcPending"].ToString());
+                    dt1.Rows.Add("No of action approval pending", Dt.Rows[0]["NoActionApprovalPending"].ToString());
+                    dataSet.Tables.Add(dt1);
+
+
+
+                    Chart chart = new Chart();
+                    chart.DataSource = dataSet.Tables[0];
+                    
+
+
+
+                    // Create series
+                    Series series = new Series();
+                    series.Name = "Series1";
+                    series.ChartType = SeriesChartType.Column;
+                    series.BorderWidth = 1;
+                    series.IsValueShownAsLabel = true;
+                    series.XValueMember = "Text";
+                    series.YValueMembers = "Value";
+                    series.Font = new Font("Tahoma", 10.0f);
+                    chart.Series.Add(series);
+
+
+
+                    // Customize series appearance
+                    series.BorderColor = Color.FromArgb(164, 164, 164);
+                    series.ShadowColor = Color.FromArgb(128, 128, 128);
+                    series.ShadowOffset = 1;
+                    series.BackSecondaryColor = Color.FromArgb(0, 102, 153);
+                    series.LabelForeColor = Color.FromArgb(100, 100, 100);
+
+
+
+                    // Create chart area
+                    ChartArea chartArea = new ChartArea();
+                    chartArea.Name = "ChartArea1";
+                    chartArea.BackColor = Color.White;
+                    chartArea.BorderColor = Color.FromArgb(26, 59, 105);
+                    chartArea.BorderWidth = 0;
+                    chartArea.AxisX.MajorGrid.Enabled = false;
+                    chartArea.AxisY.MajorGrid.Enabled = false;
+                    chart.ChartAreas.Add(chartArea);
+
+
+
+                    // Set chart data binding
+                    chart.DataBind();
+
+
+
+                    // Define colors for each data point
+                    string[] colors = new string[] { "MidnightBlue", "Green", "Red", "Orange" };
+                    for (int pointIndex = 0; pointIndex < 4; pointIndex++)
+                    {
+                        chart.Series["Series1"].Points[pointIndex].Color = Color.FromName(colors[pointIndex]);
+                    }
+
+
+
+                    // Add the chart control to your form or control
+                    // Example: yourForm.Controls.Add(chart);
+
+
+
+
+                    //////prepare chart control.
+                    ////Chart chart = new Chart();
+                    ////chart.DataSource = dataSet.Tables[0];
+                    ////chart.Width = 700;
+                    ////chart.Height = 450;
+                    //////create serie.
+                    ////Series serie1 = new Series();
+                    ////serie1.Name = "Serie1";
+                    ////serie1.BorderColor = Color.FromArgb(164, 164, 164);
+                    ////serie1.ChartType = SeriesChartType.Column;
+                    ////serie1.BorderDashStyle = ChartDashStyle.Solid;
+                    ////serie1.BorderWidth = 1;
+                    ////serie1.ShadowColor = Color.FromArgb(128, 128, 128);
+                    ////serie1.ShadowOffset = 1;
+                    ////serie1.IsValueShownAsLabel = true;
+                    ////serie1.XValueMember = "Text";
+                    ////serie1.YValueMembers = "Value";
+                    ////serie1.Font = new Font("Tahoma", 10.0f);
+
+
+
+                    ////serie1.BackSecondaryColor = Color.FromArgb(0, 102, 153);
+                    ////serie1.LabelForeColor = Color.FromArgb(100, 100, 100);
+                    ////chart.Series.Add(serie1);
+
+
+
+                    //////create chartareas.
+                    ////ChartArea ca = new ChartArea();
+                    ////ca.Name = "ChartArea1";
+                    ////ca.BackColor = Color.White;
+                    ////ca.BorderColor = Color.FromArgb(26, 59, 105);
+                    ////ca.BorderWidth = 0;
+                    ////ca.BorderDashStyle = ChartDashStyle.Solid;
+                    ////ca.AxisX = new Axis();
+                    ////ca.AxisY = new Axis();
+                    ////ca.AxisX.MajorGrid.Enabled = false;
+                    ////ca.AxisY.MajorGrid.Enabled = false;
+                    ////chart.ChartAreas.Add(ca);
+                    //////databind.
+                    ////chart.DataBind();
+
+
+
+                    ////string[] color = new string[] { "MidnightBlue", "Green", "Red", "Orange" };
+                    ////for (int pointIndex = 0; pointIndex < 4; pointIndex++)
+                    ////{
+
+
+
+                    ////    chart.Series["Serie1"].Points[pointIndex].Color = System.Drawing.Color.FromName(color[pointIndex]);
+                    ////}
+                    /*
+                    foreach (DataPoint point  in chart.Series[0].Points)
+                    {
+                        // Set Color on condition.
+                        if (point.YValues[0] < 1)
+                        {
+                            point.Color = Color.Yellow;
+                        }
+                        else if (point.YValues[0] > 1 && point.YValues[0] < 4)
+                        {
+                            point.Color = Color.Red;
+                        }
+                        else if (point.YValues[0] > 4 && point.YValues[0] < 5)
+                        {
+                            point.Color = Color.Green;
+                        }
+                        else
+                        {
+                            point.Color = Color.FromArgb(112, 255, 200);
+                        }
+                    }
+
+
+
+                    */
+
+
+
+                    byte[] bytes = null;
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        chart.SaveImage(memoryStream, ChartImageFormat.Png);
+                        bytes = memoryStream.ToArray();
+                    }
+                    image = "data:image/png;base64," + Convert.ToBase64String(bytes);
+
+
+
+                    imagedata = image;
+
+
+
+
+
+
+                    TotalDt = new DataTable();
+                    SQLCONN = OnlineDBConnectionOpen();
+
+
+
+                    string start = startOfMonth.ToString("yyyy-MM-dd");
+                    string end = startOfMonth.ToString("yyyy-MM-dd");
+
+
+
+                    string psname = "MIW_PR_Get_MaterialMailHandlingChartTCReport";
+                    SqlCommand cmmd = new SqlCommand(psname, SQLCONN);
+                    cmmd.CommandType = CommandType.StoredProcedure;
+                    SqlDataAdapter adpts = new SqlDataAdapter(cmmd);
+                    cmmd.Parameters.AddWithValue("@iShop", Shop);
+                    cmmd.Parameters.AddWithValue("@iReportingManger", resultdata);
+                    cmmd.Parameters.AddWithValue("@iStartDate", startOfMonth);
+                    cmmd.Parameters.AddWithValue("@iEndDate", lastDay);
+
+
+
+                    adpts.Fill(TotalDt);
+                    CloseOnlineDBConnection(SQLCONN);
+                    cmmd.Dispose();
+
+
+
+
+
+
+                    //TotalDt = new DataTable();
+                    //SQLCONN = OnlineDBConnectionOpen();
+                    //string start = startOfMonth.ToString("yyyy-MM-dd");
+                    //string end = startOfMonth.ToString("yyyy-MM-dd");
+
+
+
+                    //string TotalCount = "MIW_PR_Get_MaterialMailHandlingChartTCReport";
+                    //SqlCommand TotalCountcmd = new SqlCommand(TotalCount, SQLCONN);
+                    //TotalCountcmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    //TotalCountcmd.Parameters.AddWithValue("@Shop", Shop);
+                    //TotalCountcmd.Parameters.AddWithValue("@iReportingManger", resultdata);
+                    //TotalCountcmd.Parameters.AddWithValue("@iStartDate", start);
+                    //TotalCountcmd.Parameters.AddWithValue("@iEndDate", end);
+                    //SqlDataAdapter TotalCountadpt = new SqlDataAdapter(TotalCountcmd);
+                    //TotalCountadpt.Fill(TotalDt);
+                    //CloseOnlineDBConnection(SQLCONN);
+                    //TotalCountcmd.Dispose();
+
+
+
+
+
+
+
+                    string htmlString = "";
+                    if (GroupMailId != string.Empty)
+                    {
+                        if (GroupMailId != string.Empty)
+                        {
+                            htmlString = GetHTMLMsg1(TotalDt, imagedata, month, ShopOutput, firstCharacters);
+
+
+
+                            TestSendEmail(htmlString, stremail, stremailcc, GroupMailId, month);
+                            //SuccessMail(htmlString, stremail,stremailcc,GroupMailId);
+                        }
+                    }
+
+
+
+
+
+                }
+               
+                     
+
+
+
+            }
+
+
+
+
+
+        }
+
+
+
+        public static string GetHTMLMsg1(DataTable dt, string image, string month, string ShopOutput, string firstCharacters)
+        {
+            try
+            {
+                StringBuilder strHTMLBuilder = new StringBuilder();
+
+
+
+                strHTMLBuilder.Append("<table >"
+    + "<tr><td align='center' style='font-size: 14pt'><h3><font face='Arial' color='#00498f'>"
+    + "Material handling monthly NC summary</h3></font></td></tr>"
+    + "<tr><td height='30px' style='font-size: 11pt'><font face='Arial'>Dear Sir/Madam,</font></td></tr>"
+    + "<tr><td style='font-size: 11pt'><font face='Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Plant- " + firstCharacters + "   " + ShopOutput + " Material handling monthly NC summary for the month of " + month + "<span><strong>&nbsp; </strong></span></font></td></tr>"
+    + "</table>");
+
+
+
+                strHTMLBuilder.Append("<div style='text-align:left;'>");
+                strHTMLBuilder.Append("<img src='" + image + "' width='500' height='300'  />");
+                strHTMLBuilder.Append("</div>");
+
+
+
+                 strHTMLBuilder.Append("<font face='Calibri'><b><a href='http://10.121.56.114:98/login'>Please Click here to view NC Data </a></b></font>");
+
+
+
+                strHTMLBuilder.Append("<br/><br/><table>"
+                    + "<tr><td height='25' align='left' style='font-size: 8pt'><font face='Arial' color='#00498f'>This is an auto-generated mail. Do not reply to this mail.</font></td></tr>"
+                    + "</table>"
+                    + "<table align='left'><tr><td style='font-size: 11pt'><font face='Arial'>Regards,</font></td></tr>"
+                    + "<tr><td style='font-size: 11pt'><font face='Arial'></font></td></tr>"
+                    + "<tr><td align='left' style='font-size: 11pt'><font face='Arial'>TVS Motor Company Limited.</font></td></tr>"
+                    + "</table>");
+
+
+
+
+                string Htmltext = strHTMLBuilder.ToString();
+
+
+
+                return Htmltext;
+
+
+
+            }
+            catch (Exception ee)
+            {
+                return null;
+            }
+        }
+
+
+
+        //    public static string GetHTMLMsg1(DataTable dt,string image,string month,string ShopOutput,string firstCharacters)
+        //{
+        //    try
+        //    {
+        //        StringBuilder strHTMLBuilder = new StringBuilder();
+        //        //Header
+
+
+
+        //        strHTMLBuilder.Append("<table align='left' >"
+        //                + " <tr><td align='center' style='font-size: 14pt'><h3><font face='Arial' color='#00498f'>"
+        //                + " Material handling monthly NC summary </ h3></font></td></tr>"
+        //                + "<br/><tr><td height='30px' style='font-size: 11pt'><font face='Arial'>Dear Sir/Madam,</font></td></tr><br/>"
+
+
+
+        //                + "<tr>" +
+        //                " <p><td style='font-size: 11pt'>" +
+        //                "<font face='Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Plant- " + firstCharacters + "   " + ShopOutput + " Material handling monthly NC summary for the month of  " + month + ""
+        //                   + " <span><strong>&nbsp; </strong></span></p>" +
+        //                   "<p><span style='font - family: Arial;'><strong>&nbsp; &nbsp; &nbsp; &nbsp;</strong><span style='color: #ff0000;'>Request to encourage your team members for action implementation & standardization  , "
+        //                + "  </font></td></tr></table>");
+
+
+
+
+        //        strHTMLBuilder.Append("<img   src = '" + image + "' />");
+
+
+
+        //        //--QMS 
+        //        //strHTMLBuilder.Append("<br/><br/><span><strong>" + "QMS CERTIFICATES" + "</strong></span>");
+        //        strHTMLBuilder.Append("<br/><br/>");
+
+
+
+        //        //if (dt.Rows.Count > 0)
+        //        //{
+        //        //    strHTMLBuilder.Append("<table cellpadding='0' cellspacing='0' border='2' width='300%'>");
+        //        //    strHTMLBuilder.Append("<tr align='center'>");
+
+
+
+        //        //    foreach (DataColumn myColumn in dt.Columns)
+        //        //    {
+        //        //        strHTMLBuilder.Append("<th height='15' bgcolor='#006699'><font face='Calibri' color='#FFFFFF'><b> " + myColumn.ColumnName + "</b></font></th>");
+        //        //    }
+
+
+
+        //        //    strHTMLBuilder.Append("</tr>");
+
+
+
+        //        //    int currRow = 1;
+        //        //    foreach (DataRow myRow in dt.Rows)
+        //        //    {
+        //        //        strHTMLBuilder.Append("<tr align='left' style='" + (currRow % 2 == 0 ? "background-color:white" : "background-color:#f0f0f0") + "' valign='top'>");
+        //        //        // strHTMLBuilder.Append("<tr align='left'>");
+        //        //        foreach (DataColumn myColumn in dt.Columns)
+        //        //        {
+        //        //            strHTMLBuilder.Append("<td height='15'><font face='Calibri' color='black'>" + myRow[myColumn.ColumnName].ToString() + "</font></td>");
+        //        //        }
+        //        //        strHTMLBuilder.Append("</tr>");
+        //        //        currRow++;
+        //        //    }
+        //        //    strHTMLBuilder.Append("</table>");
+        //        //}
+
+
+
+
+
+
+        //        if (dt.Rows.Count > 0)
+        //        {
+        //            strHTMLBuilder.Append("<table cellpadding='0' cellspacing='0' border='2'>");
+        //            strHTMLBuilder.Append("<tr  height:'31px'  align='center' >");
+        //            foreach (DataColumn myColumn in dt.Columns)
+        //            {
+        //                if (myColumn.ColumnName == "Remark" || myColumn.ColumnName == "OPNDesc" || myColumn.ColumnName == "GLEmpName" || myColumn.ColumnName == "LineTLEmpName" || myColumn.ColumnName == "OperatorName")
+        //                {
+        //                    //strHTMLBuilder.Append("<th height='9px' width='300px'  bgcolor='#006699'><font face='Calibri' color='#FFFFFF'><b> " + myColumn.ColumnName + "</b></font></th>");
+        //                }
+        //                else
+        //                {
+        //                    strHTMLBuilder.Append("<th height='31px' width='5%'  bgcolor='#006699' align-item ='center' ><font face='Calibri' color='#FFFFFF'><b> " + myColumn.ColumnName + "</b></font></th>");
+        //                }
+        //            }
+
+
+
+        //            strHTMLBuilder.Append("</tr>");
+
+
+
+
+        //            int currRow = 1;
+
+
+
+        //            strHTMLBuilder.Append("<tr align='left' style='" + (currRow % 2 == 0 ? "background-color:white" : "background-color:#f0f0f0") + "' valign='top'>");
+
+
+
+        //            for (int j = 0; j < dt.Rows.Count; j++)
+        //            {
+
+
+
+        //                strHTMLBuilder.Append("<tr>");
+        //                if (dt.Rows[j]["Group Leader"].ToString() != string.Empty)     /* Get  GLEmpPhoto  In  mail */
+        //                {
+        //                    string GLimgpath = dt.Rows[j]["Group Leader"].ToString();
+
+
+
+        //                    try
+        //                    {
+        //                        string requests = GLimgpath;
+        //                        System.Net.HttpWebRequest.DefaultWebProxy = null;
+        //                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requests);
+        //                        request.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+
+
+        //                        String ver = response.ProtocolVersion.ToString();
+        //                        StreamReader reader = new StreamReader(response.GetResponseStream());
+        //                        string str = reader.ReadLine();
+        //                        response.Close();
+        //                        if (str != null)
+        //                        {
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["GLEmpName"].ToString() + "</span>");
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse; align-content:center;padding-right:1% \">" +
+        //                      " <img  width='100%' height='100%'   src=" + dt.Rows[j]["Group Leader"].ToString() + "  /> " +
+        //                      "   </td>");
+
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+        //                            // image doesn't exist, set to default picture
+
+
+
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["GLEmpName"].ToString() + "</span>");
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:1% \">" +
+        //                                                            " <img  width='100%' height='100%' src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+
+        //                        }
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+
+
+
+        //                        strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["GLEmpName"].ToString() + "</span>");
+
+
+
+        //                        // image doesn't exist, set to default picture
+
+
+
+        //                        strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:1% \">" +
+        //                                                        " <img width='100%' height='100%' src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                    }
+        //                    finally
+        //                    {
+
+
+
+        //                    }
+
+
+
+        //                }
+        //                else
+        //                {
+
+
+
+        //                    strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["GLEmpName"].ToString() + "</span>");
+
+
+
+
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:1% \">" +
+        //                                                    " <img  width='100%' height='100%'     align-content:center  src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+
+
+
+        //                }
+
+
+
+
+
+
+        //                if (dt.Rows[j]["Team Leader"].ToString() != string.Empty)
+        //                {
+
+
+
+        //                    string LineTLEmpPhotoimgpath = dt.Rows[j]["Team Leader"].ToString();
+
+
+
+        //                    try
+        //                    {
+        //                        string Linerequests = LineTLEmpPhotoimgpath;
+        //                        System.Net.HttpWebRequest.DefaultWebProxy = null;
+        //                        HttpWebRequest LineTL = (HttpWebRequest)WebRequest.Create(Linerequests);
+        //                        LineTL.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        HttpWebResponse Lineresponse = (HttpWebResponse)LineTL.GetResponse();
+
+
+
+        //                        String ver = Lineresponse.ProtocolVersion.ToString();
+        //                        StreamReader Linereader = new StreamReader(Lineresponse.GetResponseStream());
+        //                        string str = Linereader.ReadLine();
+        //                        Lineresponse.Close();
+
+
+
+
+        //                        if (str != null)
+        //                        {
+
+
+
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["LineTLEmpName"].ToString() + "</span>");
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-right:1%  \">" +
+        //                           " <img width='100%' height='100%'  src=" + dt.Rows[j]["Team Leader"].ToString() + "  />" +
+        //                           "    </td>");
+
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+
+
+
+        //                            // image doesn't exist, set to default picture
+
+
+
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["LineTLEmpName"].ToString() + "</span>");
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-right:1% \">" +
+        //                                                            " <img width='100%' height='100%'   padding-left='4%'  src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                        }
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+        //                        // image doesn't exist, set to default picture
+        //                        strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["LineTLEmpName"].ToString() + "</span>");
+
+
+
+
+
+
+        //                        strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-right:1% \">" +
+        //                                                        " <img width='100%' height='100%'  padding-left='4%'  src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                    }
+        //                    finally
+        //                    {
+
+
+
+        //                    }
+
+
+
+
+        //                }
+        //                else
+        //                {
+        //                    // image doesn't exist, set to default picture
+        //                    strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["LineTLEmpName"].ToString() + "</span>");
+
+
+
+
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-right:1% \">" +
+        //                                                    " <img width='100%' height='100%'   padding-left='4%'   src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                }
+
+
+
+
+        //                //-- OperatorPhoto
+
+
+
+        //                if (dt.Rows[j]["Stage Operator"].ToString() != string.Empty)
+        //                {
+        //                    string OPimgpath = dt.Rows[j]["Stage Operator"].ToString();
+
+
+
+        //                    try
+        //                    {
+        //                        string OPrequests = OPimgpath;
+
+
+
+        //                        HttpWebRequest OPTL = (HttpWebRequest)WebRequest.Create(OPrequests);
+        //                        OPTL.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        OPTL.Proxy = GlobalProxySelection.GetEmptyWebProxy();
+
+
+
+
+        //                        HttpWebResponse OPresponse = (HttpWebResponse)OPTL.GetResponse();
+        //                        String ver = OPresponse.ProtocolVersion.ToString();
+        //                        StreamReader OPreader = new StreamReader(OPresponse.GetResponseStream());
+
+
+
+
+        //                        string str = OPreader.ReadLine();
+        //                        OPresponse.Close();
+        //                        if (str != null)
+        //                        {
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OperatorName"].ToString() + "</span>");
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:8%;height:8%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:3%\">" +
+        //                           " <img  width='65%' height='65%'   src=" + dt.Rows[j]["Stage Operator"].ToString() + "  /> " +
+        //                           " </td>");
+
+
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+        //                            // image doesn't exist, set to default picture
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OperatorName"].ToString() + "</span>");
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:3% \">" +
+        //                                                            " <img width='65%' height='65%'   src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                        }
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+        //                        // image doesn't exist, set to default picture
+        //                        strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OperatorName"].ToString() + "</span>");
+
+
+
+
+        //                        strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;padding-left:3% \">" +
+        //                                                        " <img  width='65%' height='65%'    src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                    }
+        //                    finally
+        //                    {
+
+
+
+        //                    }
+
+
+
+        //                }
+        //                else
+        //                {
+        //                    // image doesn't exist, set to default picture
+
+
+
+        //                    strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OperatorName"].ToString() + "</span>");
+
+
+
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;\">" +
+        //                                                    " <img  width='65%' height='65%'     src='http://intranet/WorkManLoanApplication/images/default.png'</td>");
+
+
+
+        //                }
+
+
+
+
+        //                if (dt.Rows[j]["MH Photo1 Before"].ToString() != string.Empty)
+        //                {
+        //                    try
+        //                    {
+
+
+
+        //                        string ImageFile1requests = dt.Rows[j]["MH Photo1 Before"].ToString();
+
+
+
+        //                        HttpWebRequest ImageFile1 = (HttpWebRequest)WebRequest.Create(ImageFile1requests);
+        //                        ImageFile1.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        HttpWebResponse Imageresponse = (HttpWebResponse)ImageFile1.GetResponse();
+        //                        String ver = Imageresponse.ProtocolVersion.ToString();
+        //                        StreamReader Imagereader = new StreamReader(Imageresponse.GetResponseStream());
+        //                        string str = Imagereader.ReadLine();
+        //                        Imageresponse.Close();
+        //                        if (str != null)
+        //                        {
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OPNDesc"].ToString() + "</span>");
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:10%;height:10%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;\">" +
+        //                          " <img   width='100%' height='100%'     src =" + dt.Rows[j]["MH Photo1 Before"].ToString() + "></img>   </td>");
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+
+
+
+        //                            strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OPNDesc"].ToString() + "</span>");
+        //                            // image doesn't exist, set to default picture
+        //                            strHTMLBuilder.Append("<td align='center' style='font-size: 14pt'><h3><font face='Arial' color='#00498f'>"
+        //                                                           + "Image Not Uploaded</h3></font></td>");
+
+
+
+        //                        }
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+        //                        // image doesn't exist, set to default picture
+        //                        strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OPNDesc"].ToString() + "</span>");
+
+
+
+        //                        strHTMLBuilder.Append("<td align='center' style='font-size: 14pt'><h3><font face='Arial' color='#00498f'>"
+        //                          + "Image Not Uploaded</h3></font></td>");
+        //                    }
+        //                    finally
+        //                    {
+
+
+
+        //                    }
+
+
+
+
+        //                }
+        //                else
+        //                {
+        //                    strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["OPNDesc"].ToString() + "</span>");
+
+
+
+        //                    strHTMLBuilder.Append("<td align='center' style='font-size: 14pt'><h3><font face='Arial' color='#00498f'>"
+        //                       + "Image Not Uploaded</h3></font></td>");
+        //                }
+
+
+
+
+        //                if (dt.Rows[j]["MH Photo2 Before"].ToString() != string.Empty)
+        //                {
+
+
+
+
+        //                    try
+        //                    {
+
+
+
+        //                        string ImageFile2requests = dt.Rows[j]["MH Photo2 Before"].ToString();
+
+
+
+        //                        HttpWebRequest ImageFile2 = (HttpWebRequest)WebRequest.Create(ImageFile2requests);
+        //                        ImageFile2.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        HttpWebResponse Image2response = (HttpWebResponse)ImageFile2.GetResponse();
+        //                        String ver = Image2response.ProtocolVersion.ToString();
+        //                        StreamReader Image2reader = new StreamReader(Image2response.GetResponseStream());
+        //                        string str = Image2reader.ReadLine();
+        //                        Image2response.Close();
+        //                        if (str != null)
+        //                        {
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:10%;height:10%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;\">" +
+        //                              " <img  width='100%' height='100%' src =" + dt.Rows[j]["MH Photo2 Before"].ToString() + "></img>   </td>");
+
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+        //                            // image doesn't exist, set to default picture
+
+
+
+
+
+        //                            strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                       + "Optional</h3></font></td>");
+
+
+
+        //                        }
+
+
+
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+        //                        // image doesn't exist, set to default picture
+
+
+
+
+        //                        strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                          + "Optional</h3></font></td>");
+        //                    }
+
+
+
+
+        //                }
+        //                else
+        //                {
+
+
+
+        //                    strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                        + "Optional</h3></font></td>");
+        //                }
+
+
+
+        //                if (dt.Rows[j]["After Photo"].ToString() != string.Empty)
+        //                {
+
+
+
+
+        //                    try
+        //                    {
+
+
+
+        //                        string ImageFile2requests = dt.Rows[j]["After Photo"].ToString();
+
+
+
+        //                        HttpWebRequest ImageFile2 = (HttpWebRequest)WebRequest.Create(ImageFile2requests);
+        //                        ImageFile2.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        //                        HttpWebResponse Image2response = (HttpWebResponse)ImageFile2.GetResponse();
+        //                        String ver = Image2response.ProtocolVersion.ToString();
+        //                        StreamReader Image2reader = new StreamReader(Image2response.GetResponseStream());
+        //                        string str = Image2reader.ReadLine();
+        //                        Image2response.Close();
+        //                        if (str != null)
+        //                        {
+
+
+
+
+        //                            strHTMLBuilder.Append("<td style=\"width:10%;height:10%;border:1px solid black;font-size: 11pt; border-collapse:collapse;align-content:center;\">" +
+        //                              " <img  width='100%' height='100%' src =" + dt.Rows[j]["AfterPhoto"].ToString() + "></img>   </td>");
+
+
+
+
+
+        //                        }
+        //                        else
+        //                        {
+        //                            // image doesn't exist, set to default picture
+
+
+
+
+
+        //                            strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                       + "Yet To Update</h3></font></td>");
+
+
+
+        //                        }
+
+
+
+        //                    }
+        //                    catch (Exception ee)
+        //                    {
+        //                        // image doesn't exist, set to default picture
+
+
+
+
+        //                        strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                          + "Yet To Update</h3></font></td>");
+        //                    }
+
+
+
+
+        //                }
+        //                else
+        //                {
+
+
+
+        //                    strHTMLBuilder.Append("<td align='center' style='font-size: 11pt'><h3><font face='Calibri' color='#00498f'>"
+        //                        + "Yet To Update</h3></font></td>");
+        //                }
+
+
+
+
+        //                if (dt.Rows[j]["Remark"].ToString() != string.Empty)
+        //                {
+
+
+
+
+
+
+        //                    strHTMLBuilder.Append("<span >" + "" + dt.Rows[j]["Observation"].ToString() + "</span>");
+
+
+
+
+
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;align:center;border:1px solid black;font-size: 11pt; border-collapse:collapse;\">" +
+        //                   "" + dt.Rows[j]["Remark"].ToString() + "</td>");
+
+
+
+        //                }
+        //                if (dt.Rows[j]["Status"].ToString()!= string.Empty)
+        //                {
+
+
+
+
+
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;align:center;border:1px solid black;font-size: 11pt; border-collapse:collapse;\">" +
+        //                   "" + dt.Rows[j]["Status"].ToString() + "</td>");
+
+
+
+        //                }else
+        //                {
+        //                    string pending ="pending";
+        //                    strHTMLBuilder.Append("<td style=\"width:5%;height:5%;align:center;border:1px solid black;font-size: 11pt; border-collapse:collapse;\">" +
+        //                   "" + pending + "</td>");
+
+
+
+        //                }
+
+
+
+
+
+
+        //                //}
+        //            }
+
+
+
+        //        }
+
+
+
+        //        strHTMLBuilder.Append("</table>");
+
+
+
+        //        strHTMLBuilder.Append("<font face='Calibri'><b><a href='http://10.121.56.114:98/login'>Please Click here to view NC Data </a></b></font>");
+        //        //strHTMLBuilder.Append("<strong> < a href='http://10.121.56.114:98/login'> http://10.121.56.114:98/login </a> </strong> ");
+
+
+
+
+        //        //Bottom
+        //        strHTMLBuilder.Append("<br/><br/><table>" +
+        //            "<tr><td  height='25' align='left' style='font-size: 8pt'><font face='Arial' color='#00498f'>This is auto generated mail, Don't reply this mail..</font></td></tr>" +
+        //            "</table>"
+        //                    + "<table align='left'><tr><td style='font-size: 11pt'><font face='Arial'>Regards, </font></td></tr>"
+        //                    + "<tr><td style='font-size: 11pt'><font face='Arial'></font></td></tr>"
+        //                    + "<tr><td align='left' style='font-size: 11pt'><font face='Arial'>TVS Motor Company Limited.</font></td></tr>"
+        //                        + "</table>");
+
+
+
+        //        string Htmltext = strHTMLBuilder.ToString();
+
+
+
+        //        return Htmltext;
+
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return null;
+        //    }
+        //}
+
+
+
+
+
+        public static void SuccessMail(string Msg, string stremail, string stremailcc, string GroupMailId,string month)
+        {
+            try
+            {
+                System.Net.Mail.MailMessage Mailmsg = new System.Net.Mail.MailMessage();
+                System.Net.Mail.SmtpClient Smtp = new System.Net.Mail.SmtpClient();
+                Mailmsg.From = new MailAddress("MIWSystem@tvsmotor.co.in", "MIW System"); //From Address
+
+
+
+                Mailmsg.To.Add(stremail);   //To Address 
+                Mailmsg.CC.Add(stremailcc + "," + GroupMailId);
+                Mailmsg.Bcc.Add("divya.a@tvsmotor.com");
+                Mailmsg.IsBodyHtml = true;
+                Mailmsg.Subject = "Material handling NC summary for the month of "+ month  +" ";
+                Mailmsg.Body = Msg;
+                Mailmsg.Priority = MailPriority.High;
+                Smtp.Host = "10.121.2.222";  //Host Name
+                Smtp.Port = 25;
+                Smtp.Send(Mailmsg);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+
+        public static void TestSendEmail(string Msg, string stremail, string stremailcc, string GroupMailId,string month)
+        {
+            Microsoft.Office.Interop.Outlook.Application oApp = new Microsoft.Office.Interop.Outlook.Application();
+            Microsoft.Office.Interop.Outlook.MailItem oMsg = (Microsoft.Office.Interop.Outlook.MailItem)oApp.CreateItem(Microsoft.Office.Interop.Outlook.OlItemType.olMailItem);
+            Microsoft.Office.Interop.Outlook.Recipients oRecips = oMsg.Recipients;
+            string to = null;
+            List<string> ToList = new List<string>();
+            to = "divya.a@tvsmotor.com"; //"T.Vimalraj@tvsmotor.com"  //AD.Ashleyasherrajan@tvsmotor.com
+            //to = strEmail;
+            ToList.Add(to);
+            foreach (string t in ToList)
+            {
+                Microsoft.Office.Interop.Outlook.Recipient oTORecipt = oRecips.Add(t);
+                oTORecipt.Type = (int)Microsoft.Office.Interop.Outlook.OlMailRecipientType.olTo;
+                oTORecipt.Resolve();
+            }
+            oMsg.Subject = "Material handling NC summary for the month of " + month + "  ( 2nd level reporting manager = " + stremail + ",  cc Reporting manager Mail ID = " + stremailcc + "  GroupMailId="+ GroupMailId + " )";
+            oMsg.HTMLBody = Msg;
+
+
+
+            oMsg.Save();
+            oMsg.Send();
+            oMsg = null;
+            oApp = null;
+
+
+
+        }
+
+
+
+
+    }
+}

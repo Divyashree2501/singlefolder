@@ -1,0 +1,22 @@
+Sure! Here's a sample self-introduction you can use during an interview:
+
+"Hello, my name is [Your Name]. I have around 1 year and 8 months of experience in the IT industry, specifically in design, development, 
+testing, implementation, and support of new software using .NET Framework technologies, Microsoft SQL Server, and Visual Studio Code.
+
+In my previous role, I worked on a Dealership Management System called AdvantageTVS.
+ This software was used to manage all online activities by dealers and handle customer information and services for vehicles produced by TVS. Some of my responsibilities 
+included developing an insurance system in Angular to handle online insurance payments for 2-wheelers, 
+creating a screen for parts storage location to help dealers identify the location of parts and materials, 
+maintaining subledgers for dealers, and developing and consuming web services for lead generation and distribution.
+
+I also worked on an Inspection and Measurement Handling System developed in Angular and WebAPI. This application allowed QAD users to upload 'NOT OK' parts,
+ which would then be corrected and forwarded to the manager for approval. My responsibilities for this project included developing the system, data binding using WebAPI, 
+fetching data from SQL Server, implementing an auto-mail trigger using a console application, performing manual testing, and providing production support.
+
+I have experience working with technologies such as .NET Framework 4.0, Angular, ASP.NET 4.0, CSS, HTML, SQL Server 2014, and Visual Studio 2019.
+
+I am confident in my ability to contribute to your team with my technical skills, problem-solving abilities, and attention to detail. I am eager to take on new challenges and learn from experienced professionals in a collaborative environment.
+
+Thank you for considering my application, and I am excited about the opportunity to discuss how my skills align with the needs of your organization."
+
+Remember to personalize this introduction based on your own experience and tailor it to the specific job you are applying for. Good luck with your interview!

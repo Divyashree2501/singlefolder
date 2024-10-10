@@ -1,0 +1,72 @@
+Angular code:
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+ printData(data) {
+    let printContents, popupWin;
+    printContents = data;
+    popupWin = window.open('', '_blank', 'resizable=yes,left=0,top=0,width=1200,height=600,toolbar=0,scrollbars=yes,status=0');
+    if (popupWin && popupWin.document) {
+      popupWin.document.write(`
+      <html> 
+        <img src="./assets/tvslogo.png" alt="tvslogo" style="height: 25px;padding-left: 10px; justify-content: center;display: flex;">
+        <p class="align:center">OWN CONSUMBTION VEHICLE/ENGINE SCRAP NOTE</p>
+        <body onload="window.print();window.close()">${printContents}</body>
+        </html>`
+      );
+      popupWin.document.close();
+    }
+    else {
+      alert('Please allow popup');
+    }
+  }
+
+api code:
+
+
+    [HttpPost]
+        [Route("api/pdflink")]
+        public string pdgcreation(downloadrequestno1 data)
+        {
+            string result = "", Body = "";
+            int i = 0;
+            try
+            {
+                sql = "exec FLEET_PDF_CREATION @SRequestNo='" + data.SRequestNo + "'";
+                sql_dbconn nj = new sql_dbconn();
+                ds = nj.sql_dbconn_DataSet(ds, sql);
+                if (ds.Tables.Count > 0)
+                {
+                    dt = ds.Tables[0];
+                   // dtt = ds.Tables[1];
+                    Body = "<table style=\"width: 100 %; height: 170px;border:1px solid black; border-collapse: collapse;\"><tbody><tr><th style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> DEPT CODE </th> <th style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\"> REQUEST NUMBER </th><th style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> PROJECT CODE </th><th style=\"width: 225.266px;border:1px solid black; border-collapse: collapse;\"> NUMBER OF VEHICLE</th style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\"><th> CATEGORY </th></tr> ";
+                   Body += " <tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["dept"].ToString() + " </td> <td style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\"> " + dt.Rows[0]["SRequestNo"].ToString() + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["prcode"].ToString() + "</td><td style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> " + dt.Rows[0]["nov"].ToString() + "</td><td style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["category"].ToString() + "</td></tr>  ";
+                    Body += "<tr><th style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> DOCUMENT NO </th><th style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\"> COST CENTER </th><th style=\"width: 174.312px;border: 1px solid black; border-collapse: collapse;\"> VEH TAKEN DATE</th><th style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> SCRAP DATE </th><th style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\"> FY </th></tr>";
+                    Body += "<tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["SRequestNo"].ToString() + "</td><td style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["costcenter"].ToString() + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["Ware_Moddate"].ToString() + "</td><td style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["moddate"].ToString() + "</td><td  style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\">" + dt.Rows[0]["year"].ToString() + "</td></tr> ";
+                    dt1 = ds.Tables[1];
+                    Body += " <tr><th style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> SI NO </th><th style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\"> ENGINE NUMBER </th><th style=\"width: 174.312px;border: 1px solid black; border-collapse: collapse;\"> FRAME NUMBER </th>  <th style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> SOURCE </th><th style=\"width: 255.484px;border: 1px solid black; border-collapse: collapse;\"> REASON FOR SCRAPPING</th></tr> ";
+                    foreach (DataRow dr in dt1.Rows)
+                    {
+                        i++;
+                        
+                        Body += "  <tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse; text-align: center;\"> " + (i) + " </td><td style=\"width: 186.375px;border: 1px solid black; border-collapse: collapse;\"> " + dr["Enginnumber"].ToString() + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> " + dr["Framenumber"].ToString() + "</td><td style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> " + dr["source"].ToString() + "</td><td style=\"width: 255.484px;border: 1px solid black; border-collapse: collapse;\"> " + dr["justification"].ToString() + "</td></tr> ";
+                    }
+                    dt2 = ds.Tables[2];
+                   // dt3 = ds.Tables[4];
+                    Body += " <tr><th style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> USER SIGN </th><th style=\"width: 186.375px;border:1px solid black; border-collapse: collapse;\"> MANAGER SIGN </th><th style=\"width: 174.312px;border: border: 1px solid black; border-collapse: collapse;\"> HOD SIGN </th><th style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> FINANCE SIGN </th><th style=\"width: 255.484px;border: border: 1px solid black; border-collapse: collapse;\"> GAD SIGN </th></tr>";
+                  
+               
+                    Body += "<tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\">   <img src=" + "http://intranet/signature/"+dt.Rows[0]["empno"].ToString()+ ".jpg" + " /></td><td style=\"width: 186.375px;border:1px solid black; border-collapse: collapse;\"> <img src=" + "http://intranet/signature/" + dt.Rows[0]["MANAGEREMPNO"].ToString() + ".jpg" + " /> </td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> <img src=" + "http://intranet/signature/" + dt.Rows[0]["HODEMPNO"].ToString() + ".jpg" + " /> </td><td style=\"width: 225.266px;border:1px solid black; border-collapse: collapse;\"> <img src=" + "http://intranet/signature/" + dt.Rows[0]["FINANCEEMPNO"].ToString() + ".jpg" + " /></td><td style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\">  <img src=" + "http://intranet/signature/" + dt.Rows[0]["GAD"].ToString() + ".jpg" + " /></td></tr>";
+                   // Body += "<tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> " + LoadBase64(dt3.Rows[0]["Empsign"].ToString()) + "</td><td style=\"width: 186.375px;border:1px solid black; border-collapse: collapse;\"> " + LoadBase64(dt3.Rows[0]["MGRsign"].ToString()) + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> " + LoadBase64(dt3.Rows[0]["HODsign"].ToString()) + "</td><td style=\"width: 225.266px;border:1px solid black; border-collapse: collapse;\"> " + LoadBase64(dt2.Rows[0]["FINsign"].ToString()) + "</td><td style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\"> " + LoadBase64(dt2.Rows[0]["GADsign"].ToString()) + "</td></tr>";
+                    Body += "<tr><td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["empname"].ToString() + "</td><td style=\"width: 186.375px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["mgr"].ToString() + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["hod"].ToString() + "</td><td style=\"width: 225.266px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["Fin"].ToString() + "</td><td style=\"width: 255.484px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["GAD"].ToString() + "</td></tr>";
+                    Body += "<tr> <td style=\"width: 151.562px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["moddate"].ToString() + "</td><td style=\"width: 186.375px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["MANAGERmoddate"].ToString() + "</td><td style=\"width: 174.312px;border:1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["HODMODDATE"].ToString() + "</td><td style=\"width: 225.266px;border: 1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["FINANCEmoddate"].ToString() + "</td><td style=\"width: 255.484px;border: 1px solid black; border-collapse: collapse;\"> " + dt2.Rows[0]["GADMODDATE"].ToString() + "</td></tr> </ tbody ></ table > ";
+                }
+                return  Body;
+            }
+            catch (Exception ee)
+            {
+                result = "0";
+            }
+            return Body;
+        }
