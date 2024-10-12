@@ -1,0 +1,959 @@
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Student_Management</title>
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <link href="~/css/StudentManagement.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center;">Student Management System</h2>
+        <div class="row">
+            <div class="col-md-5" ></div>
+            <div class="col-md-2"style="text-align: center;">
+                <label>ID</label>
+                <input type="text" class="form-control" id="tbId" readonly/>
+
+            </div>
+            <div class="col-md-5"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-4"style="text-align: center;">
+                        <label>Name</label>
+                        <input type="text" class="form-control" id="tbName" placeholder="Enter Name" />
+                    </div>
+                    <div class="col-md-4" style="text-align: center;">
+                        <label>DOB </label>
+                        <div id="datepicker" class="input-group date" data-date-format="mm-dd-yyyy">
+                            <input class="form-control" id="tbDOB" data-validation="date"type="text" />
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4"style="text-align: center;">
+                        <div class="group">
+                            <label>Age</label>
+                            <input type="text" class="form-control" id="tbAge" readonly/>
+                        </div>
+                    </div>
+                    <div class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="form-group form-check-inline">
+                            <label style="margin-right: 20px;">Gender:</label>
+                            <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Gender" id="rdGenderM" value="male" />
+                                    <label class="from-check-label">
+                                        Male
+                                    </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Gender" id="rdGenderF" value="female" />
+                                <label class="from-check-label">
+                                    female
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="form-group">
+                            <label style="margin-right: 20px;">Course:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check1" value="Java" name="coursename">
+                                <label class="form-check-label">Java</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check2" value="python" name="coursename">
+                                <label class="form-check-label">python</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check3" value="Donet" name="coursename">
+                                <label class="form-check-label">Donet</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="group">
+                            <label>Address</label>
+                            <div class="form">
+                                <textarea class="form-control" id="tbAddress" placeholder="enter Address"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="group">
+                            <label>City</label>
+                            <select class="form-control" id="ddlcity" required>
+                                <option>--Select--</option>
+                                <option>Hosur</option>
+                                <option>Chennai</option>
+                                <option>Mysore</option>
+                                <option>Banglore</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10 text-center">
+                <div class="row">
+                    <div class="group">
+                        <input type="submit" class="btn btn-primary" id="btnsubmit" value="submit"/>
+                       
+                        @*<button type="button" class="btn btn-primary" id="btnsubmit">Submit</button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/js/StudentManagement.js"></script>
+</body>
+</html>
+
+---------------------
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>StudentDataTable</title>
+    <link href="~/css/StudentManagement.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/js/StudentDataTable.js"></script>
+
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-bordered" id="tbstudent">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">Id</th>
+                            <th style="width: 10%">Name</th>
+                            <th style="width: 30%">Dob</th>
+                            <th style="width: 10%">Age</th>
+                            <th style="width: 10%">Gender</th>
+                            <th style="width: 10%">Course</th>
+                            <th style="width: 10%">Address</th>
+                            <th style="width: 10%">city</th>
+                            <th style="width: 10%">Action </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody></tbody>
+                </table>
+                <button class="btn btn-primary" onclick="redirect()">Show Delete</button>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    
+</body>
+
+</html>
+-------------------------
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DeleteTableRecords</title>
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/js/DeleteTableRecords.js"></script>
+
+</head>
+<body>
+    <div class="container"> 
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-bordered" id="tbDeleterow">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Dob</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Course</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Action </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+</body>
+</html>
+--------------------------
+
+//document.addEventListener('DOMContentLoaded', function () {
+//	// Initialize the Flatpickr datepicker
+//	flatpickr(".datepicker", {
+//		dateFormat: 'dd-mm-yyyy', // You can customize the date format
+//		defaultDate: '',
+//		altInput: true,
+//		altFormat: 'd-m-Y', // Set the altFormat to 'dd-mm-yyyy'
+//		minDate: new Date('1990-01-01'), // Explicitly set the minimum date
+//		// Add more options as needed
+//	});
+//});
+//jQuery(document).ready(function () {
+//	jQuery('#datepicker').datepicker({
+//		format: 'dd-mm-yyyy',
+//		startDate: '+1d'
+//	});
+//});
+
+//$(document).ready(function () {
+//	$(function () {
+//		$("#datepicker").datepicker({
+//			Autoclose: true,
+//			todayhighlight: true
+//		}).datepicker();
+//	});
+//})
+
+//$(".calendar")
+//	.datepicker({
+//		onselect: function (datetext) {
+//			console.log("selected date" + datetext + ";input's current value" + this.value);
+//		}.on("change", function (datetext) {
+//			//$('.datepicker').hide();
+//			var dob = $("#datepicker").val();
+//			var SDob = new Date(dob);
+//			var today = new Date();
+//			var age = math.floor((today - SDob) / (365.25 * 24 * 60 * 60 * 1000));
+//			$("#tbAge").val(age);
+//	})
+//})
+
+//$('#btnsubmit').click(function() {
+        
+//    });
+
+
+//$(function () {
+//	$("#datepicker1").datepicker({
+//		//format: 'dd-mm-yyyy',
+//		autoclose: true,
+//		todayHighlight: true,
+//	}).datepicker('setDate', '+0d');
+
+//	$("#datepicker2").datepicker({
+//		//format: 'dd-mm-yyyy',
+//		autoclose: true,
+//		todayHighlight: true,
+//	}).datepicker('setDate', '+1d');
+//});
+(function () {
+    $("#datepicker").datepicker({
+        autoclose: true,
+        todayHighlight: true
+    }).datepicker();
+});
+$(".date")
+    .datepicker({
+        onselect: function (datetext) {
+            console.log("selected date:" + datetext + ";input's current value:" + this.value);
+        }
+    })
+
+    .on("change", function (datetext) {
+        $('.datepicker').hide();
+        var Dob = $('#tbDOB').val();
+        var vdob = new Date(Dob);
+        var today = new Date();
+        var age = Math.floor((today - vdob) / (365.25 * 24 * 60 * 60 * 1000));
+        $('#tbAge').val(age);
+    });
+$('#btnsubmit').click(function () {
+    var Id = $('#tbId').val();
+    var Name = $('#tbName').val();
+    var Dob = $('#tbDOB').val();
+    var Age = $('#tbAge').val();
+    var Gender = $('input[name="Gender"]:checked').val();
+    var coursename = [];
+    $('input[name="coursename"]:checked').each(function (i) {
+        coursename[i] = $(this).val();
+        //alert($(this).val());
+    });
+    console.log(coursename);
+
+    var Address = $('#tbAddress').val();
+    var city = $('#ddlcity').val();
+    if (Name != "" && Dob != "" && Age != "" && Gender.checked != "" && coursename.length != 0 && Address != "" && city != "") {
+        var Data = {
+            Name: Name,
+            Dob: Dob,
+            Age: Age,
+            Gender: Gender,
+            course: coursename,
+            Address: Address,
+            city: city
+
+        };
+
+        var Data1 = {
+            Id:Id,
+            Name: Name,
+            Dob: Dob,
+            Age: Age,
+            Gender: Gender,
+            course: coursename,
+            Address: Address,
+            city: city
+
+        };
+
+        if (Id == '') {
+            $.ajax({
+                type: "post",
+                url: "/StudentManagement/StudentManagementDetails",
+                data: JSON.stringify({ Data: Data }),
+                dataType: "json",
+                contentType: "application/json charset=utf-8",
+                success: function (result) {
+                    alert("success");
+                },
+                error: function (result) {
+                    alert("error");
+                }
+            });
+        }
+        else {
+            $.ajax({
+                type: "post",
+                url: "/StudentManagement/UpdateStudentDetails",
+                data: JSON.stringify({ Data1: Data1 }),
+                datatype : "json",
+                contentType: "application/json charset=utf-8",
+                success: function (result) {
+                    alert("Success");
+
+                },
+                error: function (result) {
+                    alert("Error")
+                }
+            });
+        
+
+        }
+ 
+
+    } else {
+        return false;
+    }
+
+});
+
+
+
+//$('#btnsubmit').click(function () {
+//        var Name = $('#tbName').val();
+//        if (!$(this).val()) {
+//        $(this).addClass("error");
+//      } else {
+//        $(this).removeClass("error");
+//    }
+    
+ 
+
+
+    //var Data = {
+    //    Name: Name,
+    //    Dob: Dob,
+    //    Age: Age,
+    //    Gender: Gender,
+    //    coursename: coursename,
+    //    Address: Address,
+    //    city: city
+    
+
+    //};
+    
+
+//    $.ajax({
+//        type: "post",
+//        url: "/StudentManagement/StudentManagementDetails",
+//        data: JSON.stringify({ Data: Data }),
+//        dataType: "json",
+//        contentType: "application/json charset=utf-8",
+//        success: function (result) {
+//            alert("success");
+//        },
+//        error: function (result) {
+//            alert("error");
+//        }
+//    });
+//});
+
+$(document).ready(function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log(urlParams);
+    const Id = urlParams.get('Id');
+    $("#tbId").val(Id);
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/GetStudentDetailsId",
+        data: JSON.stringify({ Id: Id }),
+        datatype: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            alert("success");
+           
+            var name = result[0].Name;
+            $("#tbName").val(name)
+            var Dob = result[0].Dob
+            $("#tbDOB").val(Dob)
+            var Age = result[0].Age
+            $("#tbAge").val(Age)
+            //var Gender = result[0].Gender
+            //$("input[name = 'Gender']:checked").val(Gender);
+            if (result[0].Gender === 'male') {
+                $('#rdGenderM').prop('checked', true);
+            } else if (result[0].Gender === 'female') {
+                $('#rdGenderF').prop('checked', true);
+            }
+            
+            //if (result[0].coursename === 'Java') {
+            //    $('#check1').prop('checked', true);
+            //} else if (result[0].coursename === 'python') {
+            //    $('#check2').prop('checked', true);
+            //} else if (result[0].coursename === 'Donet') {
+            //    $('#check3').prop('checked', true);
+               
+            //}
+            var coursename = result[0].coursename.split(',');
+            coursename.forEach(function (coursename) {
+                if (coursename === 'Java') {
+                    $('#check1').prop('checked', true);
+                }
+                if (coursename === 'python') {
+                    $('#check2').prop('checked', true);
+                }
+                if (coursename === 'Donet') { 
+                    $('#check3').prop('checked', true);
+                }
+            });
+            var Address = result[0].Address
+            $("#tbAddress").val(Address)
+            var city = result[0].city
+            $("#ddlcity").val(city)
+        },
+        error: function (result) {
+            alert("error")
+        }
+    });
+})
+-------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace StudentManagement.Models
+{
+    public class StudentDetails
+    {
+        public int Id { get; set;}
+        public string Name { get; set; }
+        public string Dob { get; set; }
+        public string Age { get; set; }
+        public string Gender { get; set; }
+        public string[] course { get; set; }
+        public string coursename { get; set; }
+        public string Address { get; set; }
+        public string city { get; set; }
+      
+
+    }
+}
+------------
+$(document).ready(function () {
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/GetStudentdetails",
+        dataType: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            //alert("success");
+            
+            $('#tbstudent tbody').empty();
+            var newrow = '';
+            $.each(result, function (i, e) {
+                newrow += '<tr>' +
+                    '<td>' + e.Id + '</td>' +
+                    '<td>' + e.Name + '</td>' +
+                    '<td>' + e.Dob + '</td>' +
+                    '<td>' + e.Age + '</td>' +
+                    '<td>' + e.Gender + '</td>' +
+                    '<td>' + e.coursename + '</td>' +
+                    '<td>' + e.Address + '</td>' +
+                    '<td>' + e.city + '</td>' +
+                    '<td>' + '<button class="btn btn-primary" onclick="Delete(' + e.Id + ')" id="btnsubmit" >Delete</button> <button class="btn btn-danger" onclick="update(' + e.Id +')" id="btnupdate">Update</button>'+'</td>'+
+                    '</tr>';
+            });
+            $('#tbstudent tbody').append(newrow);
+            
+        },
+
+        error: function (result) {
+            alert("error");
+        }
+    })
+    
+});
+function redirect() {
+    window.location.href = "/StudentManagement/DeleteTableRecords";
+}
+function Delete(Id) {
+    alert(Id);
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/DeleteStudentDetails",
+        data: JSON.stringify({ Id: Id }),
+        datatype: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (data) {
+            console.log(data);
+            alert("success");
+            window.location.reload();
+        },
+        error: function (data) {
+            alert("error")
+        }
+    });
+
+}
+
+function update(Id) {
+
+    window.location.href = "/StudentManagement/Student_Management?Id=" + Id;
+   
+}
+-------------
+ $.ajax({
+        type: "post",
+        url: "/StudentManagement/DeleteData",
+        dataType: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            alert("success")
+            $('tbDeleterow').empty();
+            var Newrow = '';
+            $.each(result, function (i, e) {
+                Newrow += '<tr>' +
+                    '<td>' + e.Id + '</td>' +
+                    '<td>' + e.Name + '</td>' +
+                    '<td>' + e.Dob + '</td>' +
+                    '<td>' + e.Age + '</td>' +
+                    '<td>' + e.Gender + '</td>' +
+                    '<td>' + e.coursename + '</td>' +
+                    '<td>' + e.Address + '</td>' +
+                    '<td>' + e.city + '</td>' +
+                    '<td>' + '<button class="btn btn-primary" onclick="Delete(' + e.Id + ')" id="btnsubmit" >Delete</button>' + '</td>' +
+                    '</tr>';
+            });
+            $('#tbDeleterow tbody').append(Newrow);
+        },
+        error: function (result) {
+            alert("Error")
+        }
+    });
+});
+--------
+using StudentManagement.DAL;
+using StudentManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace StudentManagement.Controllers
+{
+    public class StudentManagementController : Controller
+    {
+        StudentDAL stud = new StudentDAL();
+        // GET: StudentManagement
+        public ActionResult Student_Management()
+        {
+            return View();
+        }
+        public JsonResult StudentManagementDetails(StudentDetails Data)
+        {
+            
+            int i=stud.StudentManagementDetails(Data);
+            return Json(i, JsonRequestBehavior.AllowGet);
+
+        }
+        public ActionResult StudentDataTable()
+        {
+            return View();
+        }
+        public JsonResult GetStudentdetails()
+        {
+            List<StudentDetails> liststudent = new List<StudentDetails>();
+            liststudent = stud.GetStudentdetails();
+            return Json(liststudent, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult DeleteStudentDetails(int Id)
+        {
+            int k = stud.DeleteStudentDetails(Id);
+            return Json(k, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult DeleteTableRecords()
+        {
+            return View();
+        }
+        public JsonResult DeleteData()
+        {
+            List<StudentDetails> DeleteStudent = new List<StudentDetails>();
+            DeleteStudent = stud.DeleteData();
+            return Json(DeleteStudent, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult Updatedetails()
+        {
+            return View();
+        }
+        public JsonResult GetStudentDetailsId(int Id)
+        {
+            List<StudentDetails> m = stud.GetStudentDetailsId(Id);
+            return Json(m, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult UpdateStudentDetails(StudentDetails Data1)
+        {
+
+            int j = stud.UpdateStudentDetails(Data1);
+            return Json(j, JsonRequestBehavior.AllowGet);
+        }
+    }
+}
+--------------------
+dal
+using StudentManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+
+namespace StudentManagement.DAL
+{
+    public class StudentDAL
+    {
+        private readonly string con = ConfigurationManager.ConnectionStrings["DataBaseConnection"].ToString();
+
+
+        public int StudentManagementDetails(StudentDetails Data)
+        {
+            var Course = string.Join(",", Data.course);
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("InsertStudentDetails", cn))
+                {
+                    try
+                    {
+
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.AddWithValue("@Name", Data.Name);
+                        cmd.Parameters.AddWithValue("@Dob", Data.Dob);
+                        cmd.Parameters.AddWithValue("@Age", Data.Age);
+                        cmd.Parameters.AddWithValue("@Gender", Data.Gender);
+                        cmd.Parameters.AddWithValue("@Course", Course);
+                        cmd.Parameters.AddWithValue("@Address", Data.Address);
+                        cmd.Parameters.AddWithValue("@city", Data.city);
+                        cn.Open();
+                        int count = cmd.ExecuteNonQuery();
+                        return count;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+            }
+        }
+        public List<StudentDetails> GetStudentdetails()
+        {
+            List<StudentDetails> lstKIO = new List<StudentDetails>();
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("Studentdatavalues", cn))
+                {
+                    try
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cn.Open();
+                        SqlDataReader dr = cmd.ExecuteReader();
+                        while (dr.Read())
+                        {
+                            StudentDetails S = new StudentDetails()
+                            {
+                                Id = dr["Id"] is DBNull ? 0 : Convert.ToInt32(dr["Id"]),
+                                Name = dr["Name"] is DBNull ? string.Empty : dr["Name"].ToString(),
+                                Dob = dr["Dob"] is DBNull ? string.Empty : dr["Dob"].ToString(),
+                                Age = dr["Age"] is DBNull ? string.Empty : dr["Age"].ToString(),
+                                Gender = dr["Gender"] is DBNull ? string.Empty : dr["Gender"].ToString(),
+                                coursename = dr["Course"] is DBNull ? string.Empty : dr["Course"].ToString(),
+                                Address = dr["Address"] is DBNull ? string.Empty : dr["Address"].ToString(),
+                                city = dr["City"] is DBNull ? string.Empty : dr["City"].ToString(),
+
+                            };
+                            lstKIO.Add(S);
+                        }
+                        return lstKIO;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+            }
+        }
+
+        public int DeleteStudentDetails(int Id)
+        {
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("UpdateIsActiveStatus", cn))
+                {
+                    try
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@ID", Id);
+                        cn.Open();
+                        int count = cmd.ExecuteNonQuery();
+                        return count;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+            }
+
+        }
+        public List<StudentDetails> DeleteData()
+        {
+            List<StudentDetails> lstdelete = new List<StudentDetails>();
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("DeleteDatatable", cn))
+                {
+                    try
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cn.Open();
+                        SqlDataReader dr = cmd.ExecuteReader();
+                        while (dr.Read())
+                        {
+                            StudentDetails k = new StudentDetails()
+                            {
+                                Id = dr["Id"] is DBNull ? 0 : Convert.ToInt32(dr["Id"]),
+                                Name = dr["Name"] is DBNull ? string.Empty : dr["Name"].ToString(),
+                                Dob = dr["Dob"] is DBNull ? string.Empty : dr["Dob"].ToString(),
+                                Age = dr["Age"] is DBNull ? string.Empty : dr["Age"].ToString(),
+                                Gender = dr["Gender"] is DBNull ? string.Empty : dr["Gender"].ToString(),
+                                coursename = dr["Course"] is DBNull ? string.Empty : dr["Course"].ToString(),
+                                Address = dr["Address"] is DBNull ? string.Empty : dr["Address"].ToString(),
+                                city = dr["City"] is DBNull ? string.Empty : dr["City"].ToString(),
+
+
+                            };
+                            lstdelete.Add(k);
+                        }
+                        return lstdelete;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+            }
+        }
+        public List<StudentDetails> GetStudentDetailsId(int Id)
+        {
+            List<StudentDetails> List = new List<StudentDetails>();
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("SM_GetStudentDetailsById", cn))
+                {
+                    try
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cn.Open();
+                        cmd.Parameters.AddWithValue("@ID", Id);
+
+                        SqlDataReader dr = cmd.ExecuteReader();
+                        while (dr.Read())
+                        {
+                            StudentDetails S = new StudentDetails()
+                            {
+                                Id = dr["Id"] is DBNull ? 0 : Convert.ToInt32(dr["Id"]),
+                                Name = dr["Name"] is DBNull ? string.Empty : dr["Name"].ToString(),
+                                Dob = dr["Dob"] is DBNull ? string.Empty : dr["Dob"].ToString(),
+                                Age = dr["Age"] is DBNull ? string.Empty : dr["Age"].ToString(),
+                                Gender = dr["Gender"] is DBNull ? string.Empty : dr["Gender"].ToString(),
+                                coursename = dr["Course"] is DBNull ? string.Empty : dr["Course"].ToString(),
+                                Address = dr["Address"] is DBNull ? string.Empty : dr["Address"].ToString(),
+                                city = dr["City"] is DBNull ? string.Empty : dr["City"].ToString(),
+
+                            };
+                            List.Add(S);
+                        }
+                        return List;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+
+
+            }
+
+        }
+        public int UpdateStudentDetails(StudentDetails Data1)
+        {
+            var Course = string.Join(",", Data1.course);
+            using (SqlConnection cn = new SqlConnection(con))
+            {
+                using (SqlCommand cmd = new SqlCommand("SM_UpdateStudentDetails", cn))
+                {
+                    try
+                    {
+
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@Id", Data1.Id);
+                        cmd.Parameters.AddWithValue("@Name", Data1.Name);
+                        cmd.Parameters.AddWithValue("@Dob", Data1.Dob);
+                        cmd.Parameters.AddWithValue("@Age", Data1.Age);
+                        cmd.Parameters.AddWithValue("@Gender", Data1.Gender);
+                        cmd.Parameters.AddWithValue("@Course", Course);
+                        cmd.Parameters.AddWithValue("@Address", Data1.Address);
+                        cmd.Parameters.AddWithValue("@city", Data1.city);
+                        cn.Open();
+                        int count = cmd.ExecuteNonQuery();
+                        return count;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                    finally
+                    {
+                        if (cn.State == ConnectionState.Open)
+                        {
+                            cn.Close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

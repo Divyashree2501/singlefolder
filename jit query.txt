@@ -1,0 +1,193 @@
+CREATE procedure PC_GET_JIT_PERFORMANCE_DATA_MODEL(
+
+ IN_VCODE NVARCHAR(200)DEFAULT NULL,
+ IN_MONTH VARCHAR(100),
+ IN_PLANT VARCHAR(50) DEFAULT NULL,
+ IN_Category VARCHAR(200) DEFAULT NULL
+)
+ AS
+ BEGIN
+ 	
+ 
+ 	
+ 	
+select Mo.*,CMATNR,SERIES_DESC
+from
+(
+select distinct  PARTNO,PARTDESC ,count(tab.JIT_Number) OVER(PARTITION BY PARTNO) TotaltriggeredJIT,
+ sum(tab.JJJ) OVER(PARTITION BY PARTNO) Achieved_JIT ,sum(tab.KKK) OVER(PARTITION BY PARTNO) Ontime, 
+ sum(tab.LLL) OVER(PARTITION BY PARTNO) Infull , 
+ round((sum(tab.JJJ) OVER(PARTITION BY PARTNO) / count(tab.JIT_Number) OVER(PARTITION BY PARTNO) *100),0) as JIT_percentage,
+ max(RLT/60)OVER(PARTITION BY PARTNO) RLT,BARCODE_VEH_ENTRY_TIME
+from(
+select *,(CAST(RLT AS INTEGER)-240)/60 as BARCODE_VEH_ENTRY_TIME,
+case 
+when CAST(FIN_TOT as INTEGER) <= CAST(RLT AS INTEGER) 
+and JIT_QTY = GRN_QTY then 1
+when ( JIT_BARCODE_HRS_ALONE<=90 and BARCODE_VEH_ENTRY_HRS_ALONE<= (CAST(RLT AS INTEGER)-240)
+and VEH_ENTRY_IN_HRS_ALONE<=60 and VEH_IN_GRN_HRS_ALONE<=90)  and JIT_QTY = GRN_QTY
+then 1
+else 0
+end as jjj ,-- achieved jit  
+case 
+--when  
+--(JIT_BARCODE_HRS_ALONE<=90 and BARCODE_VEH_ENTRY_HRS_ALONE<= (CAST(RLT AS INTEGER)-240)
+--and VEH_ENTRY_IN_HRS_ALONE<=60 and VEH_IN_GRN_HRS_ALONE<=90 ) then 0
+when CAST(FIN_TOT as INTEGER) > CAST(RLT AS INTEGER)  and JIT_QTY = GRN_QTY  then 1
+else 0
+end as kkk, -- on-Time (Delay in time)
+case 
+when  JIT_QTY <> GRN_QTY then 1
+
+else 0 
+end as lll -- In full
+from (
+
+
+select  WERKS,DATECODE,SUPPLIER_CODE,SUPPLIER_NAME,PARTNO,PARTDESC,JIT_NUMBER,JIT_DATE,JIT_QTY,BARCODE_NO,BARCODE_DATE,JIT_BARCODE_HRS,JIT_BARCODE_HRS_ALONE,
+VEH_ENTRY_DATE,BARCODE_VEH_ENTRY_HRS,BARCODE_VEH_ENTRY_HRS_ALONE,VEH_IN_DATE,VEH_ENTRY_IN_HRS,VEH_ENTRY_IN_HRS_ALONE,GRN_NUMBER,GRN_DATE,VEH_IN_GRN_HRS,VEH_IN_GRN_HRS_ALONE,
+VEH_OUT_DATE,TOTAL_LEAD_TIME,TOTAL_LEAD_TIME_HRS_ALONE,FIN_TOT,
+SUM(GRN_QTY) as GRN_QTY ,
+SUM(DIFF_IN_QTY) as DIFF_IN_QTY,
+RLT_IN_DAYS,
+RLT_IN_HRS,
+CASE WHEN (CAST(RLT_IN_DAYS AS INTEGER) <> 0) THEN (CAST(RLT_IN_DAYS as INTEGER)*16*60+240) ELSE (CAST(RLT_IN_HRS as INTEGER)/10000*60+240) END AS RLT
+from  
+(
+select *
+from (	
+select 
+      -- LTRIM(E.VENDOR_ID,0) as SUPPLIER_CODE,
+	   I.WERKS,
+       A.created_date,        
+       E.ENTRY_DATE as datecode,
+       I.LIFNR as SUPPLIER_CODE,
+       H.NAME1 AS SUPPLIER_NAME,
+       G.MATNR as PARTNO,
+       F.MAKTX as PARTDESC,
+       J.KWBZD as RLT_IN_DAYS,
+       J.KWBZM as RLT_IN_HRS,
+       E.PABNUM as JIT_NUMBER,
+       TO_NVARCHAR(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),'DD-MM-YYYY HH24:MI:SS') as JIT_DATE,
+       --TO_NVARCHAR(TO_TIME('11:03:00 PM'), 'HH24:MI:SS AM') AS "TIME_12HH"
+       G.PABMNG as JIT_QTY,
+       A.BARCODE_NO, 
+       TO_NVARCHAR(cast(concat(A.created_date,A.created_time) as timestamp),'DD-MM-YYYY HH24:MI:SS') as BARCODE_DATE,
+       cast((seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(A.created_date,A.created_time) as timestamp))/3600)as INTEGER )
+        || ':' ||
+       mod(Floor(abs(seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(A.created_date,A.created_time) as timestamp)))
+       /60),60) as JIT_BARCODE_HRS, --Difference b/w JIT created and  barcode created 
+       cast((seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(A.created_date,A.created_time) as timestamp))/3600)*60 as INTEGER)
+       as JIT_BARCODE_HRS_ALONE,
+
+       TO_NVARCHAR(cast(concat(C.INDATE,C.INTIME) as timestamp),'DD-MM-YYYY HH24:MI:SS') as VEH_ENTRY_DATE,
+	   cast((seconds_between(cast(concat(A.created_date,A.created_time) as timestamp),cast(concat(C.INDATE,C.INTIME) as timestamp) ))/3600 as INTEGER)
+
+       || ':' ||
+       mod(floor(abs(seconds_between(cast(concat(A.created_date,A.created_time) as timestamp),cast(concat(C.INDATE,C.INTIME) as timestamp) ))/60),60)
+       as BARCODE_VEH_ENTRY_HRS, --Difference b/w barcode created and  truck gate in
+
+       --floor((seconds_between(cast(concat(A.created_date,A.created_time) as timestamp),cast(concat(C.INDATE,C.INTIME) as timestamp))/3600) )
+        --|| ':' ||
+       --floor( mod( (seconds_between(cast(concat(A.created_date,A.created_time) as timestamp),cast(concat(C.INDATE,C.INTIME) as timestamp))) , 3600) / 60 )
+       --as BARCODE_VEH_ENTRY_HRS,
+
+       cast((seconds_between(cast(concat(A.created_date,A.created_time) as timestamp),cast(concat(C.INDATE,C.INTIME) as timestamp))/3600)*60  as INTEGER)
+       as BARCODE_VEH_ENTRY_HRS_ALONE,
+
+       --cast(concat(C.INDATE,C.INTIME) as timestamp) - cast(concat(A.created_date,A.created_time) as timestamp) as BARCODE_VEH_ENTRY_HRS,
+      TO_NVARCHAR(cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp),'DD-MM-YYYY HH24:MI:SS')   as VEH_IN_DATE,
+
+       cast((seconds_between(cast(concat(C.INDATE,C.INTIME) as timestamp),cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp))/3600) as INTEGER)
+        || ':' ||
+       mod( floor( abs( seconds_between(cast(concat(C.INDATE,C.INTIME) as timestamp),cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp)))/ 60),60)
+       as VEH_ENTRY_IN_HRS,--Difference b/w truck gate in and  truck created
+
+       cast((seconds_between(cast(concat(C.INDATE,C.INTIME) as timestamp),cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp))/3600)*60 as INTEGER)
+       as VEH_ENTRY_IN_HRS_ALONE,
+       --cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp) - cast(concat(C.INDATE,C.INTIME) as timestamp) as VEH_ENTRY_IN_HRS,
+       A.GRN_NUMBER,
+       TO_NVARCHAR(cast(concat(D.CPUDT,D.CPUTM) as timestamp),'DD-MM-YYYY HH24:MI:SS') as GRN_DATE, 
+      -- A.INV_QTY as GRN_QTY,  
+       G.PABWEM as GRN_QTY,
+
+       cast((seconds_between(cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp))/3600) as INTEGER)
+        || ':' ||
+       mod(floor( abs( seconds_between(cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp)))/ 60 ),60)
+       as VEH_IN_GRN_HRS,--Difference b/w truck created in and  GRN accounted
+
+       cast((seconds_between(cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp))/3600)*60 as INTEGER)
+       as VEH_IN_GRN_HRS_ALONE,
+       --cast(concat(D.CPUDT,D.CPUTM) as timestamp) -  cast(concat(C.CREATED_DATE,C.CREATED_TIME) as timestamp) as VEH_IN_GRN_HRS,
+
+        TO_NVARCHAR(cast(concat(C.OUTDATE,C.OUTTIME) as timestamp),'DD-MM-YYYY HH24:MI:SS') as VEH_OUT_DATE,
+        G.PABMNG - G.PABWEM as DIFF_IN_QTY,
+
+        cast((seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp))/3600) as INTEGER)
+        || ':' ||
+       mod(floor( abs( seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp)))/ 60 ),60)
+       as TOTAL_LEAD_TIME,
+
+       cast((seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp))/3600) *60 as INTEGER)
+       as TOTAL_LEAD_TIME_HRS_ALONE,
+
+        seconds_between(cast(concat(E.ENTRY_DATE,E.ENTRY_TIME) as timestamp),cast(concat(D.CPUDT,D.CPUTM) as timestamp))/60 as FIN_TOT,
+        case when G.PABMNG = G.PABWEM then 1 else 0 end as Infullsts,
+        cast(G.PABMNG as INTEGER)-cast(G.PABWEM as INTEGER) as Infulldiff  
+from "SAPPRD_HANA_BASE_EDITION"."ZMM10_JIT_GRN" as E 
+join "SAPPRD_HANA_BASE_EDITION"."PABHD" as I on I.PABNUM = E.PABNUM 
+left join "SAPPRD_HANA_BASE_EDITION"."PABIT" as G on G.PABNUM = E.PABNUM and G.PABPOS = E.PABPOS
+left join "SAPPRD_HANA_BASE_EDITION"."ZMM63_SUP_BC_DTL" as A
+       on A.sup_code = E.VENDOR_ID and A.JIT_CALL_NO = E.PABNUM  
+--and e.mblnr=a.grn_number
+left join "SAPPRD_HANA_BASE_EDITION"."ZMM64_VEH_BC_DTL" as B 
+       on A.BARCODE_NO = B.BARCODE_NO 
+left join "SAPPRD_HANA_BASE_EDITION"."ZMM29_VEH_ENTRY" as C 
+      on C.vehicle_entry = B.vehicle_entry
+left join ( select distinct max(CPUDT) CPUDT,max(CPUTM) CPUTM,MBLNR,LIFNR,MATNR,WERKS from "SAPPRD_HANA_BASE_EDITION"."MATDOC" where EBELN <> '' 
+group by MBLNR,LIFNR,MATNR,WERKS) as D 
+       on A.GRN_NUMBER = D.MBLNR and A.sup_code = D.LIFNR and A.MATNR = D.MATNR AND C.WERKS = D.WERKS AND D.MBLNR=E.MBLNR
+left Join "SAPPRD_HANA_BASE_EDITION"."MAKT" as F  on F.MATNR = G.MATNR
+
+left join "SAPPRD_HANA_BASE_EDITION"."LFA1" H on H.LIFNR = I.LIFNR
+left join "SAPPRD_HANA_BASE_EDITION"."PKHD" J on J.LIFNR = I.LIFNR and J.MATNR = G.MATNR
+where A.sup_code=IN_VCODE   
+  AND (
+        IN_Category IS NULL OR
+        IN_Category = 'All' OR
+        (H.J_1KFTBUS IS NOT NULL AND H.J_1KFTBUS = IN_Category)
+    )
+
+--AND H.J_1KFTBUS = IN_Category
+
+--and A.MATNR='KE120020' 
+and
+
+concat(LPAD(EXTRACT(Month FROM E.ENTRY_DATE),2,0),EXTRACT(YEAR FROM E.ENTRY_DATE)) =IN_MONTH and  
+I.WERKS=IN_PLANT and (D.CPUDT is not null or D.CPUDT <>'')
+and G.PABMNG >0    
+)
+)
+where GRN_NUMBER is not null or GRN_NUMBER <>'' 
+group by PARTNO,DATECODE,SUPPLIER_CODE,SUPPLIER_NAME,WERKS,PARTDESC,JIT_NUMBER,JIT_DATE,JIT_QTY,BARCODE_NO,BARCODE_DATE,JIT_BARCODE_HRS,JIT_BARCODE_HRS_ALONE,
+VEH_ENTRY_DATE,BARCODE_VEH_ENTRY_HRS,BARCODE_VEH_ENTRY_HRS_ALONE,VEH_IN_DATE,VEH_ENTRY_IN_HRS,VEH_ENTRY_IN_HRS_ALONE,GRN_NUMBER,GRN_DATE,VEH_IN_GRN_HRS,VEH_IN_GRN_HRS_ALONE,
+VEH_OUT_DATE,TOTAL_LEAD_TIME,TOTAL_LEAD_TIME_HRS_ALONE,FIN_TOT,RLT_IN_DAYS,RLT_IN_HRS order by JIT_DATE asc
+)
+) as tab 
+group by tab.PARTNO,tab.JIT_number,tab.JJJ,
+tab.KKK,tab.LLL,tab.PARTDESC,tab.BARCODE_VEH_ENTRY_TIME,tab.RLT )MO
+LEFT JOIN "SAPPRD_HANA_BASE_EDITION"."ZPP01BOM" AS Z ON MO.PARTNO = Z.CMATNR
+LEFT JOIN "HPR_DEVELOP"."VW_SKU_MODEL_MASTER" AS M ON Z.PMATNR = m.MATERIAL 
+where SERIES_DESC <>''
+GROUP BY PARTNO,PARTDESC,"TOTALTRIGGEREDJIT","ACHIEVED_JIT","ONTIME","INFULL","JIT_PERCENTAGE",
+	"RLT","BARCODE_VEH_ENTRY_TIME",CMATNR,SERIES_DESC
+
+order by TotaltriggeredJIT desc;
+
+
+
+END
+
+
+
+ --call PC_GET_JIT_PERFORMANCE_DATA_MODEL (0000021400,072022,'HOS');

@@ -1,0 +1,493 @@
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Student_Management</title>
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <link href="~/css/StudentManagement.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center;">Student Management System</h2>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-4"style="text-align: center;">
+                        <label>Name</label>
+                        <input type="text" class="form-control" id="tbName" placeholder="Enter Name" />
+                    </div>
+                    <div class="col-md-4" style="text-align: center;">
+                        <label>DOB </label>
+                        <div id="datepicker" class="input-group date" data-date-format="mm-dd-yyyy">
+                            <input class="form-control" id="tbDOB" data-validation="date"type="text" />
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4"style="text-align: center;">
+                        <div class="group">
+                            <label>Age</label>
+                            <input type="text" class="form-control" id="tbAge" readonly/>
+                        </div>
+                    </div>
+                    <div class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="form-group form-check-inline">
+                            <label style="margin-right: 20px;">Gender:</label>
+                            <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Gender" id="rdGenderM" value="male" />
+                                    <label class="from-check-label">
+                                        Male
+                                    </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Gender" id="rdGenderF" value="female" />
+                                <label class="from-check-label">
+                                    female
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="form-group">
+                            <label style="margin-right: 20px;">Course:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check1" value="Java" name="coursename">
+                                <label class="form-check-label">Java</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check2" value="python" name="coursename">
+                                <label class="form-check-label">python</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="check3" value="Donet" name="coursename">
+                                <label class="form-check-label">Donet</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+        <br />
+        <div class="row" id="lblrow3">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="group">
+                            <label>Address</label>
+                            <div class="form">
+                                <textarea class="form-control" id="tbAddress" placeholder="enter Address"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"style="text-align: center;">
+                        <div class="group">
+                            <label>City</label>
+                            <select class="form-control" id="ddlcity" required>
+                                <option>--Select--</option>
+                                <option>Hosur</option>
+                                <option>Chennai</option>
+                                <option>Mysore</option>
+                                <option>Banglore</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10 text-center">
+                <div class="row">
+                    <div class="group">
+                        <input type="submit" class="btn btn-primary" id="btnsubmit" value="submit"/>
+                       
+                        @*<button type="button" class="btn btn-primary" id="btnsubmit">Submit</button>*@
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/js/StudentManagement.js"></script>
+</body>
+</html>
+
+
+
+
+javascript 
+
+
+(function () {
+    $("#datepicker").datepicker({
+        autoclose: true,
+        todayHighlight: true
+    }).datepicker();
+});
+$(".date")
+    .datepicker({
+        onselect: function (datetext) {
+            console.log("selected date:" + datetext + ";input's current value:" + this.value);
+        }
+    })
+
+    .on("change", function (datetext) {
+        $('.datepicker').hide();
+        var Dob = $('#tbDOB').val();
+        var vdob = new Date(Dob);
+        var today = new Date();
+        var age = Math.floor((today - vdob) / (365.25 * 24 * 60 * 60 * 1000));
+        $('#tbAge').val(age);
+    });
+$('#btnsubmit').click(function () {
+    var Name = $('#tbName').val();
+    var Dob = $('#tbDOB').val();
+    var Age = $('#tbAge').val();
+    var Gender = $('input[name="Gender"]:checked').val();
+    var coursename = [];
+    $('input[name="coursename"]:checked').each(function (i) {
+        coursename[i] = $(this).val();
+        //alert($(this).val());
+    });
+
+    //$("input[name='coursename']").each(function (index, obj) {
+    //   // alert($(this).val());
+
+    //    // loop all checked items
+    //});
+    console.log(coursename);
+
+    var Address = $('#tbAddress').val();
+    var city = $('#ddlcity').val();
+    if (Name != "" && Dob != "" && Age != "" && Gender.checked != "" && coursename.length != 0 && Address != "" && city != "") {
+        var Data = {
+            Name: Name,
+            Dob: Dob,
+            Age: Age,
+            Gender: Gender,
+            course: coursename,
+            Address: Address,
+            city: city
+
+        };
+        $.ajax({
+            type: "post",
+            url: "/StudentManagement/StudentManagementDetails",
+            data: JSON.stringify({ Data: Data }),
+            dataType: "json",
+            contentType: "application/json charset=utf-8",
+            success: function (result) {
+                alert("success");
+            },
+            error: function (result) {
+                alert("error");
+            }
+        });
+
+    } else {
+        return false;
+    }
+
+});
+
+
+
+//$('#btnsubmit').click(function () {
+//        var Name = $('#tbName').val();
+//        if (!$(this).val()) {
+//        $(this).addClass("error");
+//      } else {
+//        $(this).removeClass("error");
+//    }
+    
+ 
+
+
+    //var Data = {
+    //    Name: Name,
+    //    Dob: Dob,
+    //    Age: Age,
+    //    Gender: Gender,
+    //    coursename: coursename,
+    //    Address: Address,
+    //    city: city
+    
+
+    //};
+    
+
+//    $.ajax({
+//        type: "post",
+//        url: "/StudentManagement/StudentManagementDetails",
+//        data: JSON.stringify({ Data: Data }),
+//        dataType: "json",
+//        contentType: "application/json charset=utf-8",
+//        success: function (result) {
+//            alert("success");
+//        },
+//        error: function (result) {
+//            alert("error");
+//        }
+//    });
+//});
+
+$(document).ready(function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const Id = urlParams.get('Id');
+
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/GetStudentDetailsId",
+        data: JSON.stringify({ Id: Id }),
+        datatype: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            alert("success");
+           
+            var name = result[0].Name;
+            $("#tbName").val(name)
+            var Dob = result[0].Dob
+            $("#tbDOB").val(Dob)
+            var Age = result[0].Age
+            $("#tbAge").val(Age)
+            //var Gender = result[0].Gender
+            //$("input[name = 'Gender']:checked").val(Gender);
+            if (result[0].Gender === 'male') {
+                $('#rdGenderM').prop('checked', true);
+            } else if (result[0].Gender === 'female') {
+                $('#rdGenderF').prop('checked', true);
+            }
+            
+            //if (result[0].coursename === 'Java') {
+            //    $('#check1').prop('checked', true);
+            //} else if (result[0].coursename === 'python') {
+            //    $('#check2').prop('checked', true);
+            //} else if (result[0].coursename === 'Donet') {
+            //    $('#check3').prop('checked', true);
+               
+            //}
+            var coursename = result[0].coursename;
+            $('input[name="coursename"]:checked').each(function (i) {
+                coursename[i] = $(this).val(coursename);
+                
+            });
+            
+            var Address = result[0].Address
+            $("#tbAddress").val(Address)
+            var city = result[0].city
+            $("#ddlcity").val(city)
+        },
+        error: function (result) {
+            alert("error")
+        }
+    });
+})
+-------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace StudentManagement.Models
+{
+    public class StudentDetails
+    {
+        public int Id { get; set;}
+        public string Name { get; set; }
+        public string Dob { get; set; }
+        public string Age { get; set; }
+        public string Gender { get; set; }
+        public string[] course { get; set; }
+        public string coursename { get; set; }
+        public string Address { get; set; }
+        public string city { get; set; }
+      
+
+    }
+}
+------------
+$(document).ready(function () {
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/GetStudentdetails",
+        dataType: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            //alert("success");
+            
+            $('#tbstudent tbody').empty();
+            var newrow = '';
+            $.each(result, function (i, e) {
+                newrow += '<tr>' +
+                    '<td>' + e.Id + '</td>' +
+                    '<td>' + e.Name + '</td>' +
+                    '<td>' + e.Dob + '</td>' +
+                    '<td>' + e.Age + '</td>' +
+                    '<td>' + e.Gender + '</td>' +
+                    '<td>' + e.coursename + '</td>' +
+                    '<td>' + e.Address + '</td>' +
+                    '<td>' + e.city + '</td>' +
+                    '<td>' + '<button class="btn btn-primary" onclick="Delete(' + e.Id + ')" id="btnsubmit" >Delete</button> <button class="btn btn-danger" onclick="update(' + e.Id +')" id="btnupdate">Update</button>'+'</td>'+
+                    '</tr>';
+            });
+            $('#tbstudent tbody').append(newrow);
+            
+        },
+
+        error: function (result) {
+            alert("error");
+        }
+    })
+    
+});
+function redirect() {
+    window.location.href = "/StudentManagement/DeleteTableRecords";
+}
+function Delete(Id) {
+    alert(Id);
+    $.ajax({
+        type: "post",
+        url: "/StudentManagement/DeleteStudentDetails",
+        data: JSON.stringify({ Id: Id }),
+        datatype: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (data) {
+            console.log(data);
+            alert("success");
+            window.location.reload();
+        },
+        error: function (data) {
+            alert("error")
+        }
+    });
+
+}
+
+function update(Id) {
+
+    window.location.href = "/StudentManagement/Student_Management?Id=" + Id;
+   
+}
+-------------
+ $.ajax({
+        type: "post",
+        url: "/StudentManagement/DeleteData",
+        dataType: "json",
+        contentType: "application/json charset=utf-8",
+        success: function (result) {
+            console.log(result);
+            alert("success")
+            $('tbDeleterow').empty();
+            var Newrow = '';
+            $.each(result, function (i, e) {
+                Newrow += '<tr>' +
+                    '<td>' + e.Id + '</td>' +
+                    '<td>' + e.Name + '</td>' +
+                    '<td>' + e.Dob + '</td>' +
+                    '<td>' + e.Age + '</td>' +
+                    '<td>' + e.Gender + '</td>' +
+                    '<td>' + e.coursename + '</td>' +
+                    '<td>' + e.Address + '</td>' +
+                    '<td>' + e.city + '</td>' +
+                    '<td>' + '<button class="btn btn-primary" onclick="Delete(' + e.Id + ')" id="btnsubmit" >Delete</button>' + '</td>' +
+                    '</tr>';
+            });
+            $('#tbDeleterow tbody').append(Newrow);
+        },
+        error: function (result) {
+            alert("Error")
+        }
+    });
+});
+--------
+using StudentManagement.DAL;
+using StudentManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace StudentManagement.Controllers
+{
+    public class StudentManagementController : Controller
+    {
+        StudentDAL stud = new StudentDAL();
+        // GET: StudentManagement
+        public ActionResult Student_Management()
+        {
+            return View();
+        }
+        public JsonResult StudentManagementDetails(StudentDetails Data)
+        {
+            
+            int i=stud.StudentManagementDetails(Data);
+            return Json(i, JsonRequestBehavior.AllowGet);
+
+        }
+        public ActionResult StudentDataTable()
+        {
+            return View();
+        }
+        public JsonResult GetStudentdetails()
+        {
+            List<StudentDetails> liststudent = new List<StudentDetails>();
+            liststudent = stud.GetStudentdetails();
+            return Json(liststudent, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult DeleteStudentDetails(int Id)
+        {
+            int k = stud.DeleteStudentDetails(Id);
+            return Json(k, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult DeleteTableRecords()
+        {
+            return View();
+        }
+        public JsonResult DeleteData()
+        {
+            List<StudentDetails> DeleteStudent = new List<StudentDetails>();
+            DeleteStudent = stud.DeleteData();
+            return Json(DeleteStudent, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult Updatedetails()
+        {
+            return View();
+        }
+        public JsonResult GetStudentDetailsId(int Id)
+        {
+            List<StudentDetails> m = stud.GetStudentDetailsId(Id);
+            return Json(m, JsonRequestBehavior.AllowGet);
+        }
+    }
+}

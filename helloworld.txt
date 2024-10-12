@@ -1,0 +1,378 @@
+const { DBSQLClient } = require('@databricks/sql');
+
+var token = process.env.DATABRICKS_TOKEN;
+var serverHostname = process.env.PC_DATABRICKS_SERVERHOSTNAME;
+var httpPath = process.env.PC_DATABRICKS_HTTPPATH;
+
+if (!token || !serverHostname || !httpPath) {
+    throw new Error("Cannot find Server Hostname, HTTP Path, or personal access token. " +
+        "Check the environment variables DATABRICKS_TOKEN, " +
+        "DATABRICKS_SERVER_HOSTNAME, and DATABRICKS_HTTP_PATH.");
+}
+
+const nodemailer = require('nodemailer');
+
+//-- For PRD Create a transporter for sending emails
+/*const transporter = nodemailer.createTransport({
+    host: "10.121.2.222", // Replace with the correct SMTP server IP or hostname
+    port: 25, // Replace with the correct SMTP port
+    secure: false, // Set to true if using a secure connection (SMTPS/STARTTLS)
+    auth: {
+        user: 'divya.a', // Your SMTP username
+        pass: 'strong@123#' // Your SMTP password
+    }
+});*/
+
+//-- For PRD Create a transporter for sending emails
+const transporter = nodemailer.createTransport({
+    host: 'localhost', // SMTP server hostname (localhost since it's running locally)
+    port: 1025, // Port used by the local SMTP server (MailDev default)
+    secure: false, // Set to true if using a secure connection (SMTPS/STARTTLS)
+});
+
+exports.AutomailProdReskMontDetail = (req, res) => {
+    const client = new DBSQLClient();
+    console.log('test');
+
+    client.connect({
+        token: token,
+        host: serverHostname,
+        path: httpPath
+    }).then(async (client) => {
+        const session = await client.openSession();
+        const queryOperation = await session.executeStatement(
+            `select * from MATRIX.PC_DAILY_PRODUCTION_ANALYSIS where SUPPLIER_ID = '21400' AND DATE_CODE='2023-09-21' AND DAY_VARIANCE > 0`
+        );
+
+        const result = await queryOperation.fetchAll({
+            progress: false,
+            callback: () => { },
+        });
+
+        await queryOperation.close();
+        await session.close();
+        await client.close();
+
+
+        const tableRows = result.map((item, index) => `
+        <tr style="border: 1px solid #ddd;">
+            <td style="border: 1px solid #ddd; padding: 8px;font-size:12px">${index + 1}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;font-size:12px">${item.PART_NUMBER}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;font-size:12px">${item.PART_DESC}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;font-size:12px">${item.MONTHLY_PLAN}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#0027FF;font-size:12px">${item.PLAN_SO_FAR}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#008E05;font-size:12px">${item.ACHIEVED_SO_FAR}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#FF0000;font-size:12px">${item.VARIANCE_SO_FAR}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#0027FF;font-size:12px">${item.DAY_PLAN}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#FF0000;font-size:12px">${item.DAY_ACTUAL}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;color:#FF0000;font-size:12px">${item.DAY_VARIANCE}</td>
+        </tr>
+    `);
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <title>Bootstrap Example</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        </head>
+        <body>
+        <div class="row">
+        <div class="col-lg-12" >
+        <label style="text-align:left; font-size:18px; font-family: Roboto; letter-spacing: 0px; color: #202020; opacity: 1;">Dear Buyer Name<label> </label></label></div>
+        </div>
+        <div class="row" style="padding-left:20px"><strong><label style="text-align:left; font-size: 22px; font-family: Roboto; letter-spacing: 0px; color: #ff0000;">Stock Alert : Production &nbsp; </label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;"> of the Below Listed Parts for the Supplier</label><strong><label style="text-align: left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #001fc9;">&nbsp; Metalman Auto Private Limited (21400) </label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;">is lower than planned .</label></div>
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+        <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
+        <thead>
+            <tr>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">sl.No</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Number</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Description</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Monthly Plan</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Plan So Far</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Achieved so far</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Varience So Far</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Day Plan</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Day Actual</th>
+                <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Day Variance</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRows.join('')}
+        </tbody>
+    </table>
+    <br/>
+     <div class="row">
+     <div class="col-lg-12">
+     <label class="text-align: left;
+     font-size: 18px ;
+     font-family:Roboto;
+     letter-spacing: 0px;
+     color: #202020;"> Request You to Please Take Necessary Actions. For More Detail Information, Please Click Here</label>
+     </div>
+     </div>
+<div class="row">
+<div class="col-lg-12">
+<label style="text-align: left;font-size:  20px;font-family:Roboto;
+letter-spacing: 0px;
+color: #676767;"></label>
+</div>
+<div class="row"  >
+<div class="col-lg-6" style="margin-left:10px"><label style="text-align:left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #676767;padding-left:5px">Regards, </label></div>
+<div class="col-lg-6" style="margin-left:10px"><label style="text-align:left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #202020;padding-left:5px">Team Partner Connect. </label></div>
+<div class="col-lg-6" style="margin-left:10px"><label style="text-align:left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #202020;padding-left:5px">D&amp;AI - Manufacturing and Supply Chain<label> </label></label></div>
+<div class="col-lg-6">&nbsp;</div>
+</div>
+
+</div>
+
+      
+        </body>
+        </html>
+      `;
+
+        // Send the email with the query results
+        const mailOptions = {
+            from: 'divya.a@tvsmotor.com',
+            to: 'divya.a@tvsmotor.com',
+            subject: 'Query Results',
+            // text:  JSON.stringify(result) , // You can format the result as needed
+            html: htmlContent
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log('Error sending email: ', error);
+            } else {
+                console.log('Email sent: ', info.response);
+            }
+        });
+
+        res.send(result);
+    }).catch((error) => {
+        console.log('Error connecting to Databricks: ', error);
+        res.status(500).send('Error connecting to Databricks');
+    });
+};
+
+exports.AutomailFGStockRisk = (req, res) => {
+    const client = new DBSQLClient();
+     console.log('test');
+ 
+     client.connect({
+         token: token,
+         host: serverHostname,
+         path: httpPath
+     }).then(async (client) => {
+         const session = await client.openSession();
+         const queryOperation = await session.executeStatement(
+             `select * from MATRIX.PC_FG_STOCK_RISK_MONITORING 
+             where DATE_CODE='2023-09-21' and LOCATION='HOS' and SUPPLIER_ID='21400';`
+             // where DATE_CODE='${req.body.DATE_CODE}' and LOCATION='${req.body.PLANT}' and SUPPLIER_ID='${req.body.VENDOR}';`
+         );
+ 
+ 
+         const result = await queryOperation.fetchAll({
+             progress: false,
+             callback: () => { },
+         });
+ 
+         await queryOperation.close();
+         await session.close();
+         await client.close();
+ 
+         const tableRows = result.map((item, index) => `
+ <tr style="border: 1px solid #ddd;">
+ <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.PART_NUMBER}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.PART_DESC}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.DAY_PLAN_MIN}</td>
+ </tr>
+     `);
+ 
+         const htmlContent = `
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+ <title>Bootstrap Example</title>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+ </head>
+ <body>
+ <div class="row">
+ <div class="col-lg-12" >
+ <label style="text-align:left; font-size:18px; font-family: Roboto; letter-spacing: 0px; color: #202020; opacity: 1;">Dear Buyer Name<label> </label></label></div>
+ </div>
+ <div class="row" style="padding-left:20px"><strong><label style="text-align:left; font-size: 20px; font-family: Roboto; letter-spacing: 0px; color: #ff0000;">Stock Alert</label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;"> : FG Stock of the Below Listed Parts for the Supplier </label><strong><label style="text-align: left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #001fc9;">Metalman Auto Private Limited (21400) </label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;">is Below the Avg Schedule / Day Quantity.</label></div>
+ <div class="row">&nbsp;</div>
+ <div class="row">&nbsp;</div>
+ <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;margin-bottom:10%">
+ <thead>
+ <tr>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">sl.No</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Number</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Description</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Avg Schedule / Day</th>
+ </tr>
+ </thead>
+ <tbody>
+             ${tableRows.join('')}
+ </tbody>
+ </table>      
+ </body>
+ </html>
+       `;
+
+   /* const transporter = nodemailer.createTransport({
+        host: 'cust81834-s.out.mailcontrol.com', // SMTP server for Outlook
+        port: 25, // Port for TLS
+        secure: false, // true for 465, false for other ports
+        // auth: {
+        //     user: 'ad.ashleyasherrajan@tvsmotor.com',
+        //     pass: 'welcome@08',
+        // },
+    });*/
+
+    // Create a transporter using SMTP
+    /* const transporter = nodemailer.createTransport({
+         service: 'Outlook',
+         auth: {
+             user: 'ad.ashleyasherrajan@tvsmotor.com',
+             pass: '',
+         },
+     });*/
+
+    //-- For PRD Create a transporter for sending emails
+    // const transporter = nodemailer.createTransport({
+    //     host: 'localhost', // SMTP server hostname (localhost since it's running locally)
+    //     port: 1025, // Port used by the local SMTP server (MailDev default)
+    //     secure: false, // Set to true if using a secure connection (SMTPS/STARTTLS)
+    // });
+
+    // Email data
+    const mailOptions = {
+        from: 'ad.ashleyasherrajan@tvsmotor.com',
+        to: ['ad.ashleyasherrajan@tvsmotor.com'], // Replace with the recipient's email address
+        subject: 'Hello from Node.js to Outlook',
+        //text: 'This is a test email sent from a Node.js application to Outlook.',
+        html: htmlContent //'This is a test email sent from a Node.js application to Outlook.'
+    };
+
+    // Send email
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error sending email:', error);
+        } else {
+            console.log('Email sent:', info.response);
+        }
+    });
+
+        res.send(result);
+    }).catch((error) => {
+        console.log('Error connecting to Databricks: ', error);
+        res.status(500).send('Error connecting to Databricks');
+    });
+
+    /* const client = new DBSQLClient();
+     console.log('test');
+ 
+     client.connect({
+         token: token,
+         host: serverHostname,
+         path: httpPath
+     }).then(async (client) => {
+         const session = await client.openSession();
+         const queryOperation = await session.executeStatement(
+             `SELECT *
+             FROM MATRIX.PC_PRODUCTION_RISK_MONITORING
+             WHERE MONTHID = '202309'
+             ;`
+         );
+ 
+         const result = await queryOperation.fetchAll({
+             progress: false,
+             callback: () => { },
+         });
+ 
+         await queryOperation.close();
+         await session.close();
+         await client.close();
+ 
+         const tableRows = result.map((item, index) => `
+ <tr style="border: 1px solid #ddd;">
+ <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.PART_NUMBER}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.PART_DESCRIPTION}</td>
+ <td style="border: 1px solid #ddd; padding: 8px;">${item.TVSM_PLAN}</td>
+ </tr>
+     `);
+ 
+         const htmlContent = `
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+ <title>Bootstrap Example</title>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+ </head>
+ <body>
+ <div class="row">
+ <div class="col-lg-12" >
+ <label style="text-align:left; font-size:18px; font-family: Roboto; letter-spacing: 0px; color: #202020; opacity: 1;">Dear Buyer Name<label> </label></label></div>
+ </div>
+ <div class="row" style="padding-left:20px"><strong><label style="text-align:left; font-size: 20px; font-family: Roboto; letter-spacing: 0px; color: #ff0000;">Stock Alert</label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;"> : FG Stock of the Below Listed Parts for the Supplier </label><strong><label style="text-align: left; font-size: 18px; font-family: Roboto; letter-spacing: 0px; color: #001fc9;">Metalman Auto Private Limited (21400) </label></strong><label style="text-align: left; font-size: 18px; font -family: Roboto; letter-spacing: 0px; color: #ff0000;">is Below the Avg Schedule / Day Quantity.</label></div>
+ <div class="row">&nbsp;</div>
+ <div class="row">&nbsp;</div>
+ <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;margin-bottom:10%">
+ <thead>
+ <tr>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">sl.No</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Number</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Part Description</th>
+ <th style="background-color: #072F5F; color: #fff; font-weight: bold; border: 1px solid #ddd; padding: 8px;">TVSM Plan</th>
+ </tr>
+ </thead>
+ <tbody>
+             ${tableRows.join('')}
+ </tbody>
+ </table>      
+ </body>
+ </html>
+       `;
+ 
+         // Send the email with the query results
+         const mailOptions = {
+             from: 'ad.ashleyasherrajan@tvsmotor.com',
+             to: 'ad.ashleyasherrajan@tvsmotor.com',
+             subject: 'Query Results',
+             // text:  JSON.stringify(result) , // You can format the result as needed
+             html: htmlContent
+         };
+ 
+         transporter.sendMail(mailOptions, (error, info) => {
+             if (error) {
+                 console.log('Error sending email: ', error);
+             } else {
+                 console.log('Email sent: ', info.response);
+             }
+         });
+ 
+         res.send(result);
+     }).catch((error) => {
+         console.log('Error connecting to Databricks: ', error);
+         res.status(500).send('Error connecting to Databricks');
+     });*/
+};
